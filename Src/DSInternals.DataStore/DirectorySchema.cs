@@ -8,6 +8,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
 
     /// <summary>
     /// The ActiveDirectorySchema class represents the schema partition for a particular domain.
@@ -21,12 +22,10 @@
         private const char IndexNameComponentSeparator = '_';
         private const string ParentDNTagIndex = "PDNT_index";
 
-        private IDictionary<int, SchemaAttribute> attributesByInternalId;
+        private IDictionary<uint, SchemaAttribute> attributesByAttrtyp;
         private IDictionary<string, SchemaAttribute> attributesByName;
         private IDictionary<string, int> classesByName;
 
-        // TODO: Internal?
-        // TODO: ISchema
         public DirectorySchema(IsamDatabase database)
         {
             TableDefinition dataTable = database.Tables[ADConstants.DataTableName];
@@ -42,17 +41,6 @@
         }
 
         /// <summary>
-        /// Gets the partition name.
-        /// </summary>
-        public string Name
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        /// <summary>
         /// Gets the OID prefix map.
         /// </summary>
         public PrefixMap PrefixMapper
@@ -61,7 +49,6 @@
             private set;
         }
 
-        // TODO: AttributeCollection class?
         public ICollection<SchemaAttribute> FindAllAttributes()
         {
             return this.attributesByName.Values;
@@ -88,17 +75,17 @@
             return this.attributesByName.ContainsKey(attributeName.ToLower());
         }
 
-        public SchemaAttribute FindAttribute(int internalId)
+        public SchemaAttribute FindAttribute(uint attrtyp)
         {
             SchemaAttribute attribute;
-            bool found = this.attributesByInternalId.TryGetValue(internalId, out attribute);
+            bool found = this.attributesByAttrtyp.TryGetValue(attrtyp, out attribute);
             if(found)
             {
                 return attribute;
             }
             else
             {
-                throw new SchemaAttributeNotFoundException(internalId);
+                throw new SchemaAttributeNotFoundException(attrtyp);
             }
         }
 
@@ -112,16 +99,6 @@
             return this.FindAttribute(attributeName).Index;
         }
 
-
-        /// <summary>
-        /// Refreshes the schema cache.
-        /// </summary>
-        public void RefreshSchema()
-        {
-            throw new NotImplementedException();
-        }
-
-        // TODO: Rename to CategoryDNT
         public int FindClassId(string className)
         {
             if(this.classesByName.ContainsKey(className))
@@ -130,9 +107,40 @@
             }
             else
             {
-                // TODO: Class not found exception
+                // TODO: Move to resources.
                 string message = String.Format("Class {0} has not been found in the schema.", className);
-                throw new InvalidOperationException(message);
+                throw new DirectoryObjectNotFoundException(message);
+            }
+        }
+
+        private void LoadColumnList(ColumnCollection columns)
+        {
+            this.attributesByName = new Dictionary<string, SchemaAttribute>(columns.Count);
+            this.attributesByAttrtyp = new Dictionary<uint, SchemaAttribute>(columns.Count);
+
+            foreach (var column in columns)
+            {
+                var attr = new SchemaAttribute();
+                attr.ColumnName = column.Name;
+                attr.ColumnID = column.Columnid;
+
+                if (IsAttributeColumn(attr.ColumnName))
+                {
+                    // Column is mapped to LDAP attribute
+                    attr.InternalId = GetAttrtypFromColumnName(attr.ColumnName);
+                    attributesByAttrtyp.Add(attr.InternalId.Value, attr);
+                }
+                else
+                {
+                    // System column. These normally do not appear in schema.
+                    attr.IsSystemOnly = true;
+                    attr.SystemFlags = AttributeSystemFlags.NotReplicated | AttributeSystemFlags.Base | AttributeSystemFlags.DisallowRename | AttributeSystemFlags.Operational;
+                    // Approximate Syntax from ColumnId
+                    attr.Syntax = GetSyntaxFromColumnType(column.Columnid);
+                    attr.OmSyntax = AttributeOmSyntax.Undefined;
+                    attr.Name = NormalizeSystemColumnName(attr.ColumnName);
+                    this.attributesByName.Add(attr.Name.ToLower(), attr);
+                }
             }
         }
 
@@ -159,43 +167,13 @@
             // Manually assign PDNT_index to PDNT_col
             var pdnt = FindAttribute(CommonDirectoryAttributes.ParentDNTag);
             pdnt.Index = ParentDNTagIndex;
-    }
-
-        private void LoadColumnList(ColumnCollection columns)
-        {
-            this.attributesByName = new Dictionary<string, SchemaAttribute>(columns.Count);
-            this.attributesByInternalId = new Dictionary<int, SchemaAttribute>(columns.Count);
-
-            foreach (var column in columns)
-            {
-                var attr = new SchemaAttribute();
-                attr.ColumnName = column.Name;
-                attr.ColumnID = column.Columnid;
-                if (IsAttributeColumn(attr.ColumnName))
-                {
-                    // Column is mapped to LDAP attribute
-                    attr.InternalId = GetInternalIdFromColumnName(attr.ColumnName);
-                    attributesByInternalId.Add(attr.InternalId.Value, attr);
-                }
-                else
-                {
-                    // System column. These normally do not appear in schema.
-                    attr.IsSystemOnly = true;
-                    attr.SystemFlags = AttributeSystemFlags.NotReplicated | AttributeSystemFlags.Base | AttributeSystemFlags.DisallowRename | AttributeSystemFlags.Operational;
-                    // Approximate Syntax from ColumnId
-                    attr.Syntax = GetSyntaxFromColumnType(column.Columnid);
-                    attr.OmSyntax = AttributeOmSyntax.Undefined;
-                    attr.Name = NormalizeSystemColumnName(attr.ColumnName);
-                    this.attributesByName.Add(attr.Name.ToLower(), attr);
-                }
-            }
         }
 
         private void LoadAttributeProperties(Cursor dataTableCursor)
         {
             // With these built-in attributes, ID == Internal ID
-            Columnid attributeIdCol = this.attributesByInternalId[CommonDirectoryAttributes.AttributeIdId].ColumnID;
-            SchemaAttribute ldapDisplayNameAtt = this.attributesByInternalId[CommonDirectoryAttributes.LdapDisplayNameId];
+            Columnid attributeIdCol = this.attributesByAttrtyp[CommonDirectoryAttributes.AttributeIdAttrtyp].ColumnID;
+            SchemaAttribute ldapDisplayNameAtt = this.attributesByAttrtyp[CommonDirectoryAttributes.LdapDisplayNameAttrtyp];
             Columnid ldapDisplayNameCol = ldapDisplayNameAtt.ColumnID;
             // Set index to ldapDisplayName so that we can find attributes by their name
             dataTableCursor.CurrentIndex = ldapDisplayNameAtt.Index;
@@ -220,23 +198,23 @@
 
             // Now traverse through all schema attributes and load their properties
             // Use this filter: (objectCategory=attributeSchema)
-            dataTableCursor.CurrentIndex = this.attributesByInternalId[CommonDirectoryAttributes.ObjectCategoryId].Index;
-            dataTableCursor.FindRecords(MatchCriteria.EqualTo, Key.Compose(this.FindClassId(CommonDirectoryClasses.AttributeSchema)));
+            dataTableCursor.CurrentIndex = this.attributesByAttrtyp[CommonDirectoryAttributes.ObjectCategoryId].Index;
+            dataTableCursor.FindRecords(MatchCriteria.EqualTo, Key.Compose(CommonDirectoryCl));
             while (dataTableCursor.MoveNext())
             {
-                int? internalId = dataTableCursor.RetrieveColumnAsInt(internalIdCol);
-                int attributeId = dataTableCursor.RetrieveColumnAsInt(attributeIdCol).Value;
+                uint? internalId = dataTableCursor.RetrieveColumnAsUInt(internalIdCol);
+                uint attributeId = dataTableCursor.RetrieveColumnAsUInt(attributeIdCol).Value;
                 // Some built-in attributes do not have internal id set, which means it is equal to the public id
-                int id = internalId ?? attributeId;
+                uint attrtyp = internalId ?? attributeId;
                 SchemaAttribute attribute;
-                bool found = this.attributesByInternalId.TryGetValue(id, out attribute);
+                bool found = this.attributesByAttrtyp.TryGetValue(attrtyp, out attribute);
                 if (! found)
                 {
                     // We are loading info about a new attribute
                     attribute = new SchemaAttribute();
                     attribute.InternalId = internalId;
                 }
-                attribute.Id = dataTableCursor.RetrieveColumnAsInt(attributeIdCol).Value;
+                attribute.Id = dataTableCursor.RetrieveColumnAsUInt(attributeIdCol).Value;
                 attribute.Name = dataTableCursor.RetrieveColumnAsString(ldapDisplayNameCol);
                 attribute.CommonName = dataTableCursor.RetrieveColumnAsString(cnCol);
                 attribute.RangeLower = dataTableCursor.RetrieveColumnAsInt(rangeLowerCol);
@@ -258,11 +236,11 @@
 
         private Columnid LoadColumnIdByAttributeName(Cursor cursor, string attributeName)
         {
-            Columnid attributeIdCol = this.attributesByInternalId[CommonDirectoryAttributes.AttributeIdId].ColumnID;
+            Columnid attributeIdCol = this.attributesByAttrtyp[CommonDirectoryAttributes.AttributeIdAttrtyp].ColumnID;
             // Assume that attributeNameIndex is set as the current index
             cursor.GotoKey(Key.Compose(attributeName));
-            int attributeId = cursor.RetrieveColumnAsInt(attributeIdCol).Value;
-            return this.attributesByInternalId[attributeId].ColumnID;
+            uint attributeId = cursor.RetrieveColumnAsUInt(attributeIdCol).Value;
+            // return this.attributesByAttrtyp[attributeId].ColumnID;
         }
 
         private void LoadClassList(Cursor dataTableCursor)
@@ -270,25 +248,43 @@
             // Initialize the class list
             this.classesByName = new Dictionary<string, int>();
 
-            // Load column IDs. We are in an early stage of schema loading, which means that we cannot search for non-system attributes by name. 
-            Columnid dntCol = this.FindColumnId(CommonDirectoryAttributes.DNTag);
-            Columnid governsIdCol = this.attributesByInternalId[CommonDirectoryAttributes.GovernsIdId].ColumnID;
-            SchemaAttribute ldapDisplayNameAtt = this.attributesByInternalId[CommonDirectoryAttributes.LdapDisplayNameId];
+            // Preload column IDs to spare some time in the loop.
+            Columnid dntCol = this.LoadColumnIdByAttributeName(dataTableCursor, CommonDirectoryAttributes.DNTag);
+            Columnid governsIdCol = this.LoadColumnIdByAttributeName(dataTableCursor, CommonDirectoryAttributes.GovernsId);
+            Columnid cnCol = this.LoadColumnIdByAttributeName(dataTableCursor, CommonDirectoryAttributes.CommonName);
+            Columnid schemaGuidCol = this.LoadColumnIdByAttributeName(dataTableCursor, CommonDirectoryAttributes.SchemaGuid);
+            Columnid classCategoryCol = this.LoadColumnIdByAttributeName(dataTableCursor, CommonDirectoryAttributes.ObjectClassCategory);
+            Columnid isDefunctCol = this.LoadColumnIdByAttributeName(dataTableCursor, CommonDirectoryAttributes.IsDefunct);
+            Columnid systemOnlyCol = this.LoadColumnIdByAttributeName(dataTableCursor, CommonDirectoryAttributes.SystemOnly);
+            Columnid systemFlagsCol = this.LoadColumnIdByAttributeName(dataTableCursor, CommonDirectoryAttributes.SystemFlags);
+            Columnid internalIdCol = this.LoadColumnIdByAttributeName(dataTableCursor, CommonDirectoryAttributes.InternalId);
+            SchemaAttribute ldapDisplayNameAtt = this.FindAttribute(CommonDirectoryAttributes.LdapDisplayNameAttrtyp);
 
             // Search for all classes using this heuristics: (&(ldapDisplayName=*)(governsId=*))
             dataTableCursor.CurrentIndex = ldapDisplayNameAtt.Index;
             while (dataTableCursor.MoveNext())
             {
-                int? governsId = dataTableCursor.RetrieveColumnAsInt(governsIdCol);
+                uint? governsId = dataTableCursor.RetrieveColumnAsUInt(governsIdCol);
                 if(!governsId.HasValue)
                 {
                     // This is an attribute and not a class, so we skip to the next object.
                     continue;
                 }
-                // TODO: Load more data about classes
-                int classDNT = dataTableCursor.RetrieveColumnAsDNTag(dntCol).Value;
-                string className = dataTableCursor.RetrieveColumnAsString(ldapDisplayNameAtt.ColumnID);
-                classesByName.Add(className, classDNT);
+
+                int dnt = dataTableCursor.RetrieveColumnAsDNTag(dntCol).Value;
+                string name = dataTableCursor.RetrieveColumnAsString(ldapDisplayNameAtt.ColumnID);
+                string commonName = dataTableCursor.RetrieveColumnAsString(cnCol);
+
+                var schemaClass = new SchemaClass(name, commonName, dnt, governsId.Value);
+                schemaClass.IsDefunct = dataTableCursor.RetrieveColumnAsBoolean(isDefunctCol);
+                schemaClass.SchemaGuid = dataTableCursor.RetrieveColumnAsGuid(schemaGuidCol).Value;
+                schemaClass.IsDefunct = dataTableCursor.RetrieveColumnAsBoolean(isDefunctCol);
+                // schemaClass.SystemFlags = dataTableCursor.RetrieveColumnAsAttributeSystemFlags(systemFlagsCol);
+                schemaClass.IsSystemOnly = dataTableCursor.RetrieveColumnAsBoolean(systemOnlyCol);
+                schemaClass.ClassType = dataTableCursor.RetrieveColumnAsClassType(classCategoryCol);
+                schemaClass.InternalId = dataTableCursor.RetrieveColumnAsUInt(internalIdCol);
+                // Oid
+                classesByName.Add(name, dnt);
             }
         }
 
@@ -319,8 +315,8 @@
             SchemaAttribute attribute = null;
             if(IsAttributeColumnIndex(indexName))
             {
-                int internalId = GetInternalIdFromIndexName(indexName);
-                this.attributesByInternalId.TryGetValue(internalId, out attribute);
+                uint attrtyp = GetAttrtypFromIndexName(indexName);
+                this.attributesByAttrtyp.TryGetValue(attrtyp, out attribute);
             }
             else
             {
@@ -333,6 +329,7 @@
         private static AttributeSyntax GetSyntaxFromColumnType(Columnid column)
         {
             Type colType = column.Type;
+
             if(colType == typeof(int))
             {
                 return AttributeSyntax.Int;
@@ -355,44 +352,62 @@
             }
         }
 
-        private bool IsAttributeColumn(string columnName)
+        private static bool IsAttributeColumn(string columnName)
         {
             // Attributes are stored in columns starting with ATTx
             return columnName.StartsWith(AttributeColPrefix);
         }
 
-        private bool IsAttributeColumnIndex(string indexName)
+        private static bool IsAttributeColumnIndex(string indexName)
         {
             return indexName.StartsWith(AttributeColIndexPrefix);
         }
         
-        private int GetInternalIdFromColumnName(string columnName)
+        private static uint GetAttrtypFromColumnName(string columnName)
         {
             // Strip the ATTx prefix from column name to get the numeric attribute ID
-            string attributeIdStr = columnName.Substring(AttributeColPrefix.Length + 1, columnName.Length - AttributeColPrefix.Length - 1);
+            string attrtypStr = columnName.Substring(AttributeColPrefix.Length + 1, columnName.Length - AttributeColPrefix.Length - 1);
+            
             // Parse the rest as int. May be negative (and 3rd party attributes are).
-            return Int32.Parse(attributeIdStr);
+            return UInt32.Parse(attrtypStr);
         }
 
-        private int GetInternalIdFromIndexName(string indexName)
+        /// <remarks>
+        /// Columns that correspond to AD attributes have names in the form ATTXYYYYYYYY
+        /// where X is an encoding of the attribute syntax and YYYYYYYY is the ATTRTYP of the attribute.
+        /// </remarks>
+        private static string GetColumnNameFromAttrtyp(int attrtyp, AttributeSyntax syntax)
+        {
+            var result = new StringBuilder(AttributeColPrefix);
+            char encodedSyntax = (char)(syntax + 'a');
+            // Example: Oid -> c, Sid -> r
+            // Exception: msDS-DevicePhysicalIDs is stored in column ATTk59075 but is of type UnicodeString.
+            result.Append(encodedSyntax);
+            result.Append(attrtyp);
+            return result.ToString();
+        }
+
+        private static uint GetAttrtypFromIndexName(string indexName)
         {
             // Strip the INDEX_ prefix from index name to get the numeric attribute ID
-            string attributeIdStr = NormalizeIndexName(indexName);
-            byte[] binaryAttributeId = attributeIdStr.HexToBinary();
-            if(BitConverter.IsLittleEndian)
+            string attrtypStr = NormalizeIndexName(indexName);
+            byte[] binaryAttrtyp = attrtypStr.HexToBinary();
+
+            if (BitConverter.IsLittleEndian)
             {
                 // Reverse byte order
-                binaryAttributeId.SwapBytes(0, 3);
-                binaryAttributeId.SwapBytes(1, 2);
+                binaryAttrtyp.SwapBytes(0, 3);
+                binaryAttrtyp.SwapBytes(1, 2);
             }
-            return BitConverter.ToInt32(binaryAttributeId, 0);
+
+            return BitConverter.ToUInt32(binaryAttrtyp, 0);
         }
 
-        private string NormalizeSystemColumnName(string columnName)
+        private static string NormalizeSystemColumnName(string columnName)
         {
             if (columnName.EndsWith(SystemColSuffix))
             {
-                // Strip the _col suffix
+                // Strip the _col suffix (e.g. PDNT_col)
                 return columnName.Substring(0, columnName.Length - SystemColSuffix.Length);
             }
             else
@@ -402,7 +417,7 @@
             }
         }
 
-        private string NormalizeIndexName(string indexName)
+        private static string NormalizeIndexName(string indexName)
         {
             // Strip any suffix or prefix from index
             if(indexName.StartsWith(AttributeColIndexPrefix))

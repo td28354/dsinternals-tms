@@ -8,13 +8,13 @@ namespace DSInternals.Common.Data
 {
     public class BasicSchemaAttribute : ISchemaAttribute
     {
-        public BasicSchemaAttribute(int id, string name, AttributeSyntax syntax)
+        public BasicSchemaAttribute(uint id, string name, AttributeSyntax syntax)
         {
             this.Id = id;
             this.Name = name;
             this.Syntax = syntax;
         }
-        public int? Id
+        public uint? Id
         {
             get;
             private set;

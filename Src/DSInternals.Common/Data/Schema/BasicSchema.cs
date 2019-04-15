@@ -9,12 +9,12 @@ namespace DSInternals.Common.Data
     public class BasicSchema : IDirectorySchema
     {
         private Dictionary<string, ISchemaAttribute> attributesByName;
-        private Dictionary<int, ISchemaAttribute> attributesById;
+        private Dictionary<uint, ISchemaAttribute> attributesById;
 
         public BasicSchema(IList<ISchemaAttribute> attributes)
         {
             attributesByName = new Dictionary<string, ISchemaAttribute>();
-            attributesById = new Dictionary<int, ISchemaAttribute>();
+            attributesById = new Dictionary<uint, ISchemaAttribute>();
             foreach(var attribute in attributes)
             {
                 this.attributesByName.Add(attribute.Name, attribute);
@@ -36,7 +36,7 @@ namespace DSInternals.Common.Data
             return this.attributesByName[attributeName];
         }
 
-        public int FindAttributeId(string attributeName)
+        public uint FindAttributeId(string attributeName)
         {
             // TODO: Null result validation
             return this.FindAttribute(attributeName).Id.Value;

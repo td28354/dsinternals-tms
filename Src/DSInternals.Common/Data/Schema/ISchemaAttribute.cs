@@ -4,7 +4,7 @@
 
     public interface ISchemaAttribute
     {
-        int? Id { get; }
+        uint? Id { get; }
         string Name { get; }
         AttributeSyntax Syntax { get; }
     }

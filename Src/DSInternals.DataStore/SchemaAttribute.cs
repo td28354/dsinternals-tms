@@ -7,41 +7,15 @@
     /// <summary>
     /// The ActiveDirectorySchemaAttribute class represents a schema property definition that is contained in the schema partition.
     /// </summary>
-    //TODO: Rename Attribute to ActiveDirectorySchemaAttribute
-    public class SchemaAttribute : ISchemaAttributeExt
+    public class SchemaAttribute : SchemaObject, ISchemaAttributeExt
     {
-        /// <summary>
-        /// Gets the ldapDisplayName of the ActiveDirectorySchemaAttribute object.
-        /// </summary>
-        public string Name
+        public SchemaAttribute(string ldapDisplayName, string commonName, int dnTag) : base(ldapDisplayName, commonName, dnTag)
         {
-            get;
-            internal set;
-        }
-        /// <summary>
-        /// Gets or sets the Common Name (CN) of the ActiveDirectorySchemaProperty object.
-        /// </summary>
-        public string CommonName
-        {
-            get;
-            internal set;
+
         }
 
         // Contains compressed OID
-        public int? Id
-        {
-            get;
-            internal set;
-        }
-
-        // Corresponds to column name suffix
-        public int? InternalId
-        {
-            get;
-            internal set;
-        }
-
-        public string Oid
+        public uint? Id
         {
             get;
             internal set;
@@ -52,6 +26,7 @@
             get;
             internal set;
         }
+
         public Columnid ColumnID
         {
             get;
@@ -144,12 +119,6 @@
             }
         }
 
-        public bool IsDefunct
-        {
-            get;
-            internal set;
-        }
-
         /// <summary>
         /// Gets or sets a value indicating whether the schema property is contained in the global catalog.
         /// </summary>
@@ -218,15 +187,6 @@
             }
         }
 
-        /// <summary>
-        /// Gets a value indicating whether only the system can modify this attribute.
-        /// </summary>
-        public bool IsSystemOnly
-        {
-            get;
-            internal set;
-        }
-
         public bool IsConstructed
         {
             get
@@ -239,14 +199,6 @@
         /// Gets or sets an ActiveDirectorySyntax object indicating the property type (syntax) of the Attribute object.
         /// </summary>
         public AttributeSyntax Syntax
-        {
-            get;
-            internal set;
-        }
-        /// <summary>
-        /// Gets or sets the schemaIDGuid for the ActiveDirectorySchemaProperty object.
-        /// </summary>
-        public Guid SchemaGuid
         {
             get;
             internal set;
@@ -269,9 +221,26 @@
             internal set;
         }
 
+        /// <summary>
+        /// Gets or sets the GUID by which the security system identifies the property set of this attribute. 
+        /// </summary>
+        public Guid? SecurityGuid
+        {
+            get;
+            internal set;
+        }
+
         public override string ToString()
         {
             return String.Format("Att: {0}, Col: {1}", Name, ColumnName);
+        }
+
+        protected override uint? SchemaId
+        {
+            get
+            {
+                return this.Id;
+            }
         }
     }
 }

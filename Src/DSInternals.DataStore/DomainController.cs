@@ -102,6 +102,11 @@
                 this.SchemaNamingContextDNT = dataTableCursor.RetrieveColumnAsDNTag(schema.FindColumnId(CommonDirectoryAttributes.SchemaLocation)).Value;
                 this.SchemaNamingContext = context.DistinguishedNameResolver.Resolve(this.SchemaNamingContextDNT);
 
+                // Check if objectCategory is NTDS-DSA or NTDS-DSA-RO
+                int dsaObjectCategoryDNT = dataTableCursor.RetrieveColumnAsDNTag(schema.FindColumnId(CommonDirectoryAttributes.ObjectCategory)).Value;
+                DistinguishedName dsaObjectCategoryDN = context.DistinguishedNameResolver.Resolve(dsaObjectCategoryDNT);
+                string dsaObjectCategory = dsaObjectCategoryDN.Components[0].Value;
+
                 // Goto DC object (parent of NTDS):
                 bool dcFound = dataTableCursor.GotoParentObject(schema);
                 
@@ -455,6 +460,7 @@
             get;
             private set;
         }
+
         /// <summary>
         /// Determines if this domain controller is a global catalog server.
         /// </summary>
@@ -463,6 +469,17 @@
             get
             {
                 return this.Options.HasFlag(DomainControllerOptions.GlobalCatalog);
+            }
+        }
+
+        /// <summary>
+        /// Determines if this domain controller is a RODC.
+        /// </summary>
+        public bool IsReadOnly
+        {
+            get
+            {
+                return false;
             }
         }
 

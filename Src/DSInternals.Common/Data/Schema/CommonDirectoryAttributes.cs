@@ -5,7 +5,7 @@
         public const string AdminCount = "adminCount";
         public const int AdminCountId = 589974;
         public const string AttributeId = "attributeID";
-        public const int AttributeIdId = 131102;
+        public const int AttributeIdAttrtyp = 131102;
         public const string AttributeOmSyntax = "oMSyntax";
         public const string AttributeSyntax = "attributeSyntax";
         public const string CommonName = "cn";
@@ -27,11 +27,10 @@
         public const string GivenName = "givenName";
         public const int GivenNameId = 42;
         public const string GovernsId = "governsID";
-        public const int GovernsIdId = 131094;
         public const string InstanceType = "instanceType";
         public const int InstanceTypeId = 131073;
         public const string InternalId = "msDS-IntId";
-        public const int InternalIdId = 591540;
+        public const int InternalIdAttrtyp = 591540;
         public const string InvocationId = "invocationId";
         public const string IsDefunct = "isDefunct";
         public const string IsDeleted = "isDeleted";
@@ -55,7 +54,7 @@
         public const int LastLogonId = 589876;
         public const string LastLogonTimestamp = "lastLogonTimestamp";
         public const string LDAPDisplayName = "lDAPDisplayName";
-        public const int LdapDisplayNameId = 131532;
+        public const int LdapDisplayNameAttrtyp = 131532;
         public const string LinkId = "linkID";
         public const string LMHash = "dBCSPwd";
         public const string LMHashHistory = "lmPwdHistory";
@@ -64,7 +63,7 @@
         public const string MasterNamingContexts = "msDS-hasMasterNCs";
         public const string Member = "member";
         public const string Name = "name";
-        public const int NameId = 589825;
+        public const int NameAttrtyp = 589825;
         public const string NetBIOSName = "nETBIOSName";
         public const string NTHash = "unicodePwd";
         public const string NTHashHistory = "ntPwdHistory";
@@ -73,7 +72,13 @@
         public const string ObjectCategory = "objectCategory";
         public const int ObjectCategoryId = 590606;
         public const string ObjectClass = "objectClass";
-        public const int ObjectClassId = 0;
+        public const int ObjectClassAttrtyp = 0;
+
+        /// <summary>
+        /// This attribute contains the class type, such as abstract, auxiliary, or structured.
+        /// </summary>
+        public const string ObjectClassCategory = "objectClassCategory";
+
         public const string ObjectGUID = "objectGUID";
         public const string ObjectSid = "objectSid";
         public const int ObjectSidId = 589970;
@@ -122,9 +127,9 @@
         public const string SystemOnly = "systemOnly";
         public const string UnixUserPassword = "unixUserPassword";
         public const string UserAccountControl = "userAccountControl";
-        public const int UserAccountControlId = 589832;
+        public const int UserAccountControlAttrtyp = 589832;
         public const string UserPrincipalName = "userPrincipalName";
-        public const int UserPrincipalNameId = 590480;
+        public const int UserPrincipalNameAttrtyp = 590480;
         public const string USNCreated = "uSNCreated";
         public const string USNChanged = "uSNChanged";
         public const string WhenCreated = "whenCreated";    

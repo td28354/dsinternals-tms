@@ -52,6 +52,7 @@
     <Compile Include="DirectoryAgent.PasswordManagement.cs">
       <DependentUpon>DirectoryAgent.cs</DependentUpon>
     </Compile>
+    <Compile Include="Enums\ClassType.cs" />
     <Compile Include="Enums\FunctionalLevel.cs" />
     <Compile Include="Enums\AttributeSystemFlags.cs" />
     <Compile Include="ADConstants.cs" />
@@ -60,6 +61,7 @@
     <Compile Include="Enums\PekListVersion.cs" />
     <Compile Include="Exceptions\InvalidDatabaseStateException.cs" />
     <Compile Include="PrefixMap.cs" />
+    <Compile Include="SchemaClass.cs" />
     <Compile Include="SchemaAttribute.cs" />
     <Compile Include="Extensions\CursorExtensions.cs" />
     <Compile Include="Extensions\DateTimeExtensions.cs" />
@@ -69,6 +71,7 @@
     <Compile Include="DomainController.cs" />
     <Compile Include="Interfaces\IDomainController.cs" />
     <Compile Include="Interfaces\ISchemaAttributeExt.cs" />
+    <Compile Include="SchemaObject.cs" />
     <Compile Include="SecurityDescriptorResolver.cs" />
     <Compile Include="LinkResolver.cs" />
     <Compile Include="Enums\LinkType.cs" />

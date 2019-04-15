@@ -76,7 +76,7 @@
 
                 // Retrieve the current object's RDN, e.g. CN=Administrator
                 string name = cursor.RetrieveColumnAsString(rdnColId);
-                int rdnType = cursor.RetrieveColumnAsInt(rdnTypeColId).Value;
+                uint rdnType = cursor.RetrieveColumnAsUInt(rdnTypeColId).Value;
                 string rdnAtt = schema.FindAttribute(rdnType).Name.ToUpper();
                 var currentRDN = new DistinguishedNameComponent(rdnAtt, name);
 
@@ -154,7 +154,7 @@
                 }
 
                 // Test AttrTyp
-                int foundRdnAttId = cursor.RetrieveColumnAsInt(schema.FindColumnId(CommonDirectoryAttributes.RDNType)).Value;
+                uint foundRdnAttId = cursor.RetrieveColumnAsUInt(schema.FindColumnId(CommonDirectoryAttributes.RDNType)).Value;
                 string foundRdnAttName = schema.FindAttribute(foundRdnAttId).Name;
 
                 // Compare the found isRDN attribute with the requested one. Case insensitive.

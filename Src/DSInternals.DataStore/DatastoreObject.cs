@@ -266,7 +266,7 @@
             foreach(var attributeName in attributeNames)
             {
                 // We go through all attributes that are changed in this transaction
-                int attributeId = this.context.Schema.FindAttribute(attributeName).Id.Value;
+                uint attributeId = this.context.Schema.FindAttribute(attributeName).Id.Value;
                 meta.Update(attributeId, this.context.DomainController.InvocationId, time, usn);
             }
             

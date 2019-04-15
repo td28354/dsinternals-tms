@@ -50,22 +50,22 @@ namespace DSInternals.DataStore
             }
         }
 
-        public string Translate(uint attributeId)
+        public string Translate(uint attrtyp)
         {
             // Decode Oid from attribute id (:= prefixIndex + suffix)
             const int wordSeparator = 65536;
 
             // Prefix index is encoded as upper word
-            ushort prefixIndex = (ushort) (attributeId / wordSeparator);
+            ushort prefixIndex = (ushort) (attrtyp / wordSeparator);
             bool prefixKnown = this.ContainsPrefix(prefixIndex);
             if(!prefixKnown)
             {
-                throw new ArgumentOutOfRangeException("attributeId", "Unknown attribute prefix.");
+                throw new ArgumentOutOfRangeException(nameof(attrtyp), "Unknown attribute prefix.");
             }
             string prefix = this[prefixIndex];
 
             // Suffix (last node) is encoded as lower word
-            uint lowerWord = attributeId % wordSeparator;
+            uint lowerWord = attrtyp % wordSeparator;
             if (lowerWord >= 32768)
             {
                 // Remove mark

@@ -29,7 +29,9 @@ namespace DSInternals.DataStore
             get;
             private set;
         }
+
         public AttributeMetadataCollection() : this(null) { }
+
         public AttributeMetadataCollection(byte[] buffer)
         {
             if(buffer == null)
@@ -54,22 +56,22 @@ namespace DSInternals.DataStore
                     this.InnerList = new List<AttributeMetadata>((int) numEntries);
                     for(int i = 1; i <= numEntries; i++)
                     {
-                        int attributeId = reader.ReadInt32();
+                        uint attrtyp = reader.ReadUInt32();
                         int version = reader.ReadInt32();
                         long timestamp = reader.ReadInt64();
                         Guid originatingDSA = new Guid(reader.ReadBytes(16));
                         long originatingUSN = reader.ReadInt64();
                         long localUSN = reader.ReadInt64();
-                        var entry = new AttributeMetadata(attributeId, version, timestamp, originatingDSA, originatingUSN, localUSN);
+                        var entry = new AttributeMetadata(attrtyp, version, timestamp, originatingDSA, originatingUSN, localUSN);
                         this.InnerList.Add(entry);
                     }
                 }
             }
         }
 
-        public void Update(int attributeId, Guid invocationId, DateTime time, long usn)
+        public void Update(uint attrtyp, Guid invocationId, DateTime time, long usn)
         {
-            var existingEntry = this.InnerList.FirstOrDefault(item => item.AttributeId == attributeId);
+            var existingEntry = this.InnerList.FirstOrDefault(item => item.Attrtyp == attrtyp);
             if(existingEntry != null)
             {
                 // This attribute is already contained in the list, so we just update it
@@ -78,7 +80,7 @@ namespace DSInternals.DataStore
             else
             {
                 // This is a newly added attribute
-                var newEntry = new AttributeMetadata(attributeId, invocationId, time, usn);
+                var newEntry = new AttributeMetadata(attrtyp, invocationId, time, usn);
                 this.InnerList.Add(newEntry);
             }
         }
@@ -99,7 +101,7 @@ namespace DSInternals.DataStore
                     writer.Write((long) this.Count);
                     foreach(var entry in this.InnerList)
                     {
-                        writer.Write(entry.AttributeId);
+                        writer.Write(entry.Attrtyp);
                         writer.Write(entry.Version);
                         writer.Write(entry.LastOriginatingChangeTimestamp);
                         writer.Write(entry.LastOriginatingInvocationId.ToByteArray());

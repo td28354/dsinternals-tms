@@ -34,6 +34,11 @@ namespace DSInternals.DataStore
             return (AttributeOmSyntax)cursor.RetrieveColumnAsInt(columnId).GetValueOrDefault(0);
         }
 
+        public static ClassType RetrieveColumnAsClassType(this Cursor cursor, Columnid columnId)
+        {
+            return (ClassType)cursor.RetrieveColumnAsInt(columnId).GetValueOrDefault(0);
+        }
+
         public static FunctionalLevel RetrieveColumnAsFunctionalLevel(this Cursor cursor, Columnid columnId)
         {
             return (FunctionalLevel)cursor.RetrieveColumnAsInt(columnId).GetValueOrDefault(0);

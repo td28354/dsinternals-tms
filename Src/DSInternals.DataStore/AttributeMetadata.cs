@@ -10,18 +10,18 @@ namespace DSInternals.DataStore
     public class AttributeMetadata
     {
         // TODO: Rename parameters to match field names
-        public AttributeMetadata(int attributeId, Guid invocationId, DateTime time, long usn)
+        public AttributeMetadata(uint attrtyp, Guid invocationId, DateTime time, long usn)
         {
-            this.AttributeId = attributeId;
+            this.Attrtyp = attrtyp;
             this.Version = 1;
             this.LastOriginatingChangeTime = time;
             this.LastOriginatingInvocationId = invocationId;
             this.OriginatingChangeUsn = usn;
             this.LocalChangeUsn = usn;
         }
-        public AttributeMetadata(int attributeId, int version, long timestamp, Guid originatingDSA, long originatingUSN, long localUSN)
+        public AttributeMetadata(uint attrtyp, int version, long timestamp, Guid originatingDSA, long originatingUSN, long localUSN)
         {
-            this.AttributeId = attributeId;
+            this.Attrtyp = attrtyp;
             this.Version = version;
             this.LastOriginatingChangeTimestamp = timestamp;
             this.LastOriginatingInvocationId = originatingDSA;
@@ -31,7 +31,7 @@ namespace DSInternals.DataStore
         /// <summary>
         /// Gets the identifier of the attribute.
         /// </summary>
-        public int AttributeId
+        public uint Attrtyp
         { 
             get;
             private set;
@@ -103,7 +103,7 @@ namespace DSInternals.DataStore
 
         public override string ToString()
         {
-            return String.Format("AttId: {0}, Ver: {1}, USN: {2}, Time: {3}, DSA: {4}", this.AttributeId, this.Version, this.OriginatingChangeUsn, this.LastOriginatingChangeTime, this.LastOriginatingInvocationId);
+            return String.Format("ATTRTYP: {0}, Ver: {1}, USN: {2}, Time: {3}, DSA: {4}", this.Attrtyp, this.Version, this.OriginatingChangeUsn, this.LastOriginatingChangeTime, this.LastOriginatingInvocationId);
         }
     }
 }

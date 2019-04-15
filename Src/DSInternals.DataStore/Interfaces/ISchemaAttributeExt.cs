@@ -26,6 +26,7 @@
         SearchFlags SearchFlags { get; }
         Guid SchemaGuid { get; }
         string SyntaxOid { get; }
+        Guid? SecurityGuid { get; }
         AttributeSystemFlags SystemFlags { get; }
     }
 }

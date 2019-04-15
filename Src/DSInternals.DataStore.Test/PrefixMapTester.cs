@@ -47,24 +47,78 @@ namespace DSInternals.DataStore.Test
         {
             var map = new PrefixMap();
 
-            // givenName
+            // givenName attribute
             string oid = map.Translate(42);
             Assert.AreEqual("2.5.4.42", oid);
 
-            // objectSid
+            // objectSid attribute
             oid = map.Translate(589970);
             Assert.AreEqual("1.2.840.113556.1.4.146", oid);
 
-            // searchFlags
+            // searchFlags attribute
             oid = map.Translate(131406);
             Assert.AreEqual("1.2.840.113556.1.2.334", oid);
-            
-            // Entry-TTL
+
+            // Entry-TTL attribute
             oid = map.Translate(1769475);
             Assert.AreEqual("1.3.6.1.4.1.1466.101.119.3", oid);
+
+            /* The following examples are taken from https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-drsr/6f53317f-2263-48ee-86c1-4580bf97232c */
+
+            // countryName attribute
+            oid = map.Translate(0x00000006);
+            Assert.AreEqual("2.5.4.6", oid);
+
+            // country class
+            oid = map.Translate(0x00010002);
+            Assert.AreEqual("2.5.6.2", oid);
+
+            // instanceType attribute
+            oid = map.Translate(0x00020001);
+            Assert.AreEqual("1.2.840.113556.1.2.1", oid);
+
+            // container class
+            oid = map.Translate(0x00030017);
+            Assert.AreEqual("1.2.840.113556.1.3.23", oid);
+
+            // attribute syntax: distinguished name
+            oid = map.Translate(0x00080001);
+            Assert.AreEqual("2.5.5.1", oid);
+
+            // RDN attribute
+            oid = map.Translate(0x00090001);
+            Assert.AreEqual("1.2.840.113556.1.4.1", oid);
+
+            // securityObject class
+            oid = map.Translate(0x000a0001);
+            Assert.AreEqual("1.2.840.113556.1.5.1", oid);
+
+            // uid attribute
+            oid = map.Translate(0x00150001);
+            Assert.AreEqual("0.9.2342.19200300.100.1.1", oid);
+
+            // carLicense attribute
+            oid = map.Translate(0x00160001);
+            Assert.AreEqual("2.16.840.1.113730.3.1.1", oid);
+
+            // crossRefContainer class
+            oid = map.Translate(0x00170035);
+            Assert.AreEqual("1.2.840.113556.1.5.7000.53", oid);
+
+            // ditContentRules attribute
+            oid = map.Translate(0x00180002);
+            Assert.AreEqual("2.5.21.2", oid);
+
+            // createTimeStamp attribute
+            oid = map.Translate(0x00190001);
+            Assert.AreEqual("2.5.18.1", oid);
+
+            // subSchema class
+            oid = map.Translate(0x001a0001);
+            Assert.AreEqual("2.5.20.1", oid);
         }
 
-        [TestMethod]
+    [TestMethod]
         public void PrefixMap_TranstaleUser()
         {
             var map = new PrefixMap(ExchangeBinaryPrefixMap);

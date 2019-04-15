@@ -11,6 +11,6 @@ namespace DSInternals.Common.Data
         // TODO: AttributeCollection class?
         ICollection<ISchemaAttribute> FindAllAttributes();
         ISchemaAttribute FindAttribute(string attributeName);
-        ISchemaAttribute FindAttribute(int attributeId);
+        ISchemaAttribute FindAttribute(uint attrtyp);
     }
 }

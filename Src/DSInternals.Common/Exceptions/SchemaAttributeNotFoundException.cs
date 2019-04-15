@@ -15,10 +15,10 @@
         {
             this.AttributeIdentifier = attributeName;
         }
-        public SchemaAttributeNotFoundException(int attributeId)
+        public SchemaAttributeNotFoundException(uint attrtyp)
             : base(null)
         {
-            this.AttributeIdentifier = attributeId;
+            this.AttributeIdentifier = attrtyp;
         }
         public override string Message
         {
