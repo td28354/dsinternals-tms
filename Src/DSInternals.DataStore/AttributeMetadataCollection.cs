@@ -1,22 +1,24 @@
-﻿using DSInternals.Common;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using DSInternals.Common;
 
 namespace DSInternals.DataStore
 {
     public class AttributeMetadataCollection // : IReadOnlyCollection<AttributeMetadata>
     {
+        private const ulong defaultVersion = 1;
         private const int guidSize = 16;
         private const int entrySize = 3 * sizeof(long) + 2 * sizeof(int) + guidSize;
-        public long Unknown
+
+        public ulong Version
         {
             get;
             private set;
         }
+
         public int Count
         {
             get
@@ -24,6 +26,7 @@ namespace DSInternals.DataStore
                 return (InnerList != null) ? InnerList.Count : 0;
             }
         }
+
         protected IList<AttributeMetadata> InnerList
         {
             get;
@@ -36,11 +39,12 @@ namespace DSInternals.DataStore
         {
             if(buffer == null)
             {
-                this.Unknown = 1;
+                this.Version = defaultVersion;
                 this.InnerList = new List<AttributeMetadata>();
                 return;
             }
-            if(buffer.Length < 2 * sizeof(long))
+
+            if(buffer.Length < 2 * sizeof(ulong))
             {
                 throw new ArgumentOutOfRangeException("buffer");
             }
@@ -49,29 +53,29 @@ namespace DSInternals.DataStore
             {
                 using(BinaryReader reader = new BinaryReader(stream))
                 {
-                    this.Unknown = reader.ReadInt64();
-                    long numEntries = reader.ReadInt64();
-                    long expectedBufferSize = CalculateBinarySize(numEntries);
+                    this.Version = reader.ReadUInt64();
+                    ulong numEntries = reader.ReadUInt64();
+                    ulong expectedBufferSize = CalculateBinarySize(numEntries);
                     Validator.AssertLength(buffer, expectedBufferSize, "buffer");
                     this.InnerList = new List<AttributeMetadata>((int) numEntries);
                     for(int i = 1; i <= numEntries; i++)
                     {
-                        uint attrtyp = reader.ReadUInt32();
-                        int version = reader.ReadInt32();
+                        uint attrTyp = reader.ReadUInt32();
+                        uint version = reader.ReadUInt32();
                         long timestamp = reader.ReadInt64();
                         Guid originatingDSA = new Guid(reader.ReadBytes(16));
                         long originatingUSN = reader.ReadInt64();
                         long localUSN = reader.ReadInt64();
-                        var entry = new AttributeMetadata(attrtyp, version, timestamp, originatingDSA, originatingUSN, localUSN);
+                        var entry = new AttributeMetadata(attrTyp, version, timestamp, originatingDSA, originatingUSN, localUSN);
                         this.InnerList.Add(entry);
                     }
                 }
             }
         }
 
-        public void Update(uint attrtyp, Guid invocationId, DateTime time, long usn)
+        public void Update(uint attrTyp, Guid invocationId, DateTime time, long usn)
         {
-            var existingEntry = this.InnerList.FirstOrDefault(item => item.Attrtyp == attrtyp);
+            var existingEntry = this.InnerList.FirstOrDefault(item => item.AttrTyp == attrTyp);
             if(existingEntry != null)
             {
                 // This attribute is already contained in the list, so we just update it
@@ -80,7 +84,7 @@ namespace DSInternals.DataStore
             else
             {
                 // This is a newly added attribute
-                var newEntry = new AttributeMetadata(attrtyp, invocationId, time, usn);
+                var newEntry = new AttributeMetadata(attrTyp, invocationId, time, usn);
                 this.InnerList.Add(newEntry);
             }
         }
@@ -96,12 +100,12 @@ namespace DSInternals.DataStore
             {
                 using (BinaryWriter writer = new BinaryWriter(stream))
                 {
-                    writer.Write(this.Unknown);
+                    writer.Write(this.Version);
                     // Important: Write Count as 64-bit and not 32-bit:
                     writer.Write((long) this.Count);
                     foreach(var entry in this.InnerList)
                     {
-                        writer.Write(entry.Attrtyp);
+                        writer.Write(entry.AttrTyp);
                         writer.Write(entry.Version);
                         writer.Write(entry.LastOriginatingChangeTimestamp);
                         writer.Write(entry.LastOriginatingInvocationId.ToByteArray());
@@ -128,11 +132,10 @@ namespace DSInternals.DataStore
             return InnerList.GetEnumerator();
         }
 
-        private static long CalculateBinarySize(long numEntries)
+        private static ulong CalculateBinarySize(ulong numEntries)
         {
-            // Unknown Value + Entry Count + Entries
-            return 2 * sizeof(long) + numEntries * entrySize;
+            // Version + Entry Count + Entries
+            return 2 * sizeof(ulong) + numEntries * entrySize;
         }
-
     }
 }

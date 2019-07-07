@@ -42,7 +42,7 @@ namespace DSInternals.Common.Data
             return this.FindAttribute(attributeName).Id.Value;
         }
 
-        public ISchemaAttribute FindAttribute(int attributeId)
+        public ISchemaAttribute FindAttribute(uint attrtyp)
         {
             throw new NotImplementedException();
         }

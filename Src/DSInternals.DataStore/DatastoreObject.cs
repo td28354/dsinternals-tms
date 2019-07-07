@@ -266,8 +266,8 @@
             foreach(var attributeName in attributeNames)
             {
                 // We go through all attributes that are changed in this transaction
-                uint attributeId = this.context.Schema.FindAttribute(attributeName).Id.Value;
-                meta.Update(attributeId, this.context.DomainController.InvocationId, time, usn);
+                uint attrTyp = this.context.Schema.FindAttribute(attributeName).Id.Value;
+                meta.Update(attrTyp, this.context.DomainController.InvocationId, time, usn);
             }
             
             this.SetAttribute(CommonDirectoryAttributes.PropertyMetaData, meta.ToByteArray());

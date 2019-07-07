@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 
 namespace DSInternals.DataStore
 {
@@ -10,40 +9,44 @@ namespace DSInternals.DataStore
     public class AttributeMetadata
     {
         // TODO: Rename parameters to match field names
-        public AttributeMetadata(uint attrtyp, Guid invocationId, DateTime time, long usn)
+        public AttributeMetadata(uint attrTyp, Guid invocationId, DateTime time, long usn)
         {
-            this.Attrtyp = attrtyp;
+            this.AttrTyp = attrTyp;
             this.Version = 1;
             this.LastOriginatingChangeTime = time;
             this.LastOriginatingInvocationId = invocationId;
             this.OriginatingChangeUsn = usn;
             this.LocalChangeUsn = usn;
         }
-        public AttributeMetadata(uint attrtyp, int version, long timestamp, Guid originatingDSA, long originatingUSN, long localUSN)
+
+        public AttributeMetadata(uint attrTyp, uint version, long timestamp, Guid originatingDSA, long originatingUSN, long localUSN)
         {
-            this.Attrtyp = attrtyp;
+            this.AttrTyp = attrTyp;
             this.Version = version;
             this.LastOriginatingChangeTimestamp = timestamp;
             this.LastOriginatingInvocationId = originatingDSA;
             this.OriginatingChangeUsn = originatingUSN;
             this.LocalChangeUsn = localUSN;
         }
+
         /// <summary>
         /// Gets the identifier of the attribute.
         /// </summary>
-        public uint Attrtyp
+        public uint AttrTyp
         { 
             get;
             private set;
         }
+
         /// <summary>
         /// Gets or sets the version number of this attribute.
         /// </summary>
-        public int Version
+        public uint Version
         {
             get;
             private set;
         }
+
         /// <summary>
         /// Gets the timestamp at which the last originating change was made to this attribute.
         /// </summary>
@@ -52,6 +55,7 @@ namespace DSInternals.DataStore
             get;
             private set;
         }
+
         /// <summary>
         /// Gets or sets the invocation identifier of the server on which the last change was made to this attribute.
         /// </summary>
@@ -60,6 +64,7 @@ namespace DSInternals.DataStore
             get;
             private set;
         }
+
         /// <summary>
         /// Gets or sets the update sequence number (USN) on the originating server at which the last change to this attribute was made.
         /// </summary>
@@ -68,6 +73,7 @@ namespace DSInternals.DataStore
             get;
             private set;
         }
+
         /// <summary>
         /// Gets or sets the update sequence number (USN) on the destination server at which the last change to this attribute was applied.
         /// </summary>
@@ -76,6 +82,7 @@ namespace DSInternals.DataStore
             get;
             private set;
         }
+
         /// <summary>
         /// Gets or sets the time at which the last originating change was made to this attribute.
         /// </summary>
@@ -103,7 +110,7 @@ namespace DSInternals.DataStore
 
         public override string ToString()
         {
-            return String.Format("ATTRTYP: {0}, Ver: {1}, USN: {2}, Time: {3}, DSA: {4}", this.Attrtyp, this.Version, this.OriginatingChangeUsn, this.LastOriginatingChangeTime, this.LastOriginatingInvocationId);
+            return String.Format("AttrTyp: {0}, Ver: {1}, USN: {2}, Time: {3}, DSA: {4}", this.AttrTyp, this.Version, this.OriginatingChangeUsn, this.LastOriginatingChangeTime, this.LastOriginatingInvocationId);
         }
     }
 }
