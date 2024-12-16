@@ -1,6 +1,8 @@
 ﻿using DSInternals.Common.Interop;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace DSInternals.Common.Cryptography
 {
@@ -174,7 +176,7 @@ namespace DSInternals.Common.Cryptography
         protected static byte[] ComputeMD5(byte[] key, byte[] salt, int saltHashRounds = DefaultSaltHashRounds)
         {
             // TODO: Test that saltHashRounds >= 1
-            using (var md5 = MD5.Create())
+            using (var md5 = new MD5Managed())
             {
                 // Hash key
                 md5.TransformBlock(key, 0, key.Length, null, 0);
@@ -185,7 +187,7 @@ namespace DSInternals.Common.Cryptography
                 }
                 // Final salt hash iteration
                 md5.TransformFinalBlock(salt, 0, salt.Length);
-                return md5.Hash;
+                return (byte[])md5.Hash.Clone();
             }
         }
 
