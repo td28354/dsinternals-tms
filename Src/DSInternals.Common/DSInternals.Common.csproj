@@ -33,6 +33,9 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CBOR, Version=4.5.2.0, Culture=neutral, PublicKeyToken=9cd62db60ea5554c, processorArchitecture=MSIL">
       <HintPath>..\packages\PeterO.Cbor.4.5.2\lib\net40\CBOR.dll</HintPath>
@@ -60,6 +63,7 @@
     <Compile Include="AzureAD\ODataErrorMessage.cs" />
     <Compile Include="AzureAD\OdataErrorResponse.cs" />
     <Compile Include="AzureAD\OdataPagedResponse.cs" />
+    <Compile Include="Cryptography\MD5Managed.cs" />
     <Compile Include="Cryptography\HashEqualityComparer.cs" />
     <Compile Include="Cryptography\KerberosKeyDerivation.cs" />
     <Compile Include="Cryptography\SortedFileSearcher.cs" />

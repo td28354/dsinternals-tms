@@ -21,7 +21,7 @@
   </PropertyGroup>
   <!-- Signing configuration -->
   <PropertyGroup>
-    <DoSign Condition=" '$(Configuration)'=='Release' ">true</DoSign>
+    <DoSign Condition=" '$(Configuration)'=='Release' ">false</DoSign>
     <DoSign Condition=" '$(Configuration)'=='Debug' ">false</DoSign>
     <KeyPath>..\..\Keys</KeyPath>
     <PublicKeyPath>$(KeyPath)\DSInternals.Public.snk</PublicKeyPath>
