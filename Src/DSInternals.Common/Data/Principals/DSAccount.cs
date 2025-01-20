@@ -409,6 +409,12 @@
             private set;
         }
 
+        public DateTime? PwdLastSet
+        {
+            get;
+            private set;
+        }
+
         protected void LoadAccountInfo(DirectoryObject dsObject, string netBIOSDomainName)
         {
             // Guid:
@@ -465,12 +471,24 @@
             dsObject.ReadAttribute(CommonDirectoryAttributes.Company, out string company);
             this.Company = company;
 
-            if (this.DistinguishedName.ToLower().Contains("Abram McClintock".ToLower()))
-            {
-                dsObject.ReadAttribute(CommonDirectoryAttributes.ProxyAddresses, out string[] proxies);
-                this.ProxyAddresses = proxies;
+            dsObject.ReadAttribute(CommonDirectoryAttributes.ProxyAddresses, out string[] proxies);
+            this.ProxyAddresses = proxies;
 
+            dsObject.ReadAttribute(CommonDirectoryAttributes.pwdLastSet2, out long? pwdLastChanges);
+            if (pwdLastChanges.HasValue)
+            {
+                this.PwdLastSet = DateTime.FromFileTime(pwdLastChanges.Value);
             }
+
+            //if (this.DistinguishedName.ToLower().Contains("Abram McClintock".ToLower()))
+            //{
+            //    dsObject.ReadAttribute(CommonDirectoryAttributes.pwdLastSet2, out long? pwdLastChanges);
+            //    if(pwdLastChanges.HasValue)
+            //    {
+            //        this.PwdLastSet = DateTime.FromFileTime(pwdLastChanges.Value);
+            //    }
+
+            //}
 
             // Security Descriptor:
             dsObject.ReadAttribute(CommonDirectoryAttributes.SecurityDescriptor, out RawSecurityDescriptor securityDescriptor);

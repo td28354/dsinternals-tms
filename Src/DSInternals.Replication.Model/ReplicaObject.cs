@@ -191,6 +191,35 @@
         public override void ReadAttribute(string name, out long? value)
         {
             int attributeId = this.Schema.FindAttributeId(name);
+
+            //if (name.Equals("pwdLastSet2", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    long? valueTemp = null;
+            //    for (int i = 15; i < 100000000; i++)
+            //    {
+            //        try
+            //        {
+            //            this.ReadAttribute(i, out valueTemp);
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            continue;
+            //        }
+
+            //        if (valueTemp.HasValue && valueTemp == 133815801192981068)
+            //        {
+            //            //value = valueTemp;
+            //            value = i;
+            //            return;
+            //        }
+            //    }
+            //    value = null;
+            //}
+            //else
+            //{
+            //    this.ReadAttribute(attributeId, out value);
+            //}
+
             this.ReadAttribute(attributeId, out value);
         }
 

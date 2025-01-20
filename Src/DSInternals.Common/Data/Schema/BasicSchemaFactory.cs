@@ -47,6 +47,7 @@
             attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.DepartmentId, CommonDirectoryAttributes.Department, AttributeSyntax.UnicodeString));
             attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.CompanyId, CommonDirectoryAttributes.Company, AttributeSyntax.UnicodeString));
             attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.ProxyAddressesId, CommonDirectoryAttributes.ProxyAddresses, AttributeSyntax.String));
+            attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.pwdLastSet2Id, CommonDirectoryAttributes.pwdLastSet2, AttributeSyntax.Int64));
 
             return new BasicSchema(attributes);
         }
