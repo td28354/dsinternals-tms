@@ -1,6 +1,7 @@
 ﻿namespace DSInternals.Common.Data
 {
     using System.Collections.Generic;
+    using System.Linq;
 
     public static class BasicSchemaFactory
     {
@@ -35,6 +36,17 @@
             attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.PKIAccountCredentialsId, CommonDirectoryAttributes.PKIAccountCredentials, AttributeSyntax.DNWithBinary));
             attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.KeyCredentialLinkId, CommonDirectoryAttributes.KeyCredentialLink, AttributeSyntax.DNWithBinary));
             attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.SupportedEncryptionTypesId, CommonDirectoryAttributes.SupportedEncryptionTypes, AttributeSyntax.Int));
+
+            // additional attributes
+            attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.EmailId, CommonDirectoryAttributes.Email, AttributeSyntax.UnicodeString));
+            attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.StreetAddressId, CommonDirectoryAttributes.StreetAddress, AttributeSyntax.UnicodeString));
+            attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.CityId, CommonDirectoryAttributes.City, AttributeSyntax.UnicodeString));
+            attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.StateId, CommonDirectoryAttributes.State, AttributeSyntax.UnicodeString));
+            attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.CountryId, CommonDirectoryAttributes.Country, AttributeSyntax.UnicodeString));
+            attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.ZipCodeId, CommonDirectoryAttributes.ZipCode, AttributeSyntax.UnicodeString));
+            attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.DepartmentId, CommonDirectoryAttributes.Department, AttributeSyntax.UnicodeString));
+            attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.CompanyId, CommonDirectoryAttributes.Company, AttributeSyntax.UnicodeString));
+            attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.ProxyAddressesId, CommonDirectoryAttributes.ProxyAddresses, AttributeSyntax.String));
 
             return new BasicSchema(attributes);
         }

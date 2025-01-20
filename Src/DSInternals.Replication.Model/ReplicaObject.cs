@@ -3,6 +3,7 @@
     using DSInternals.Common;
     using DSInternals.Common.Data;
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Security.AccessControl;
     using System.Security.Principal;
@@ -35,6 +36,7 @@
                 return this.distinguishedName;
             }
         }
+
         public override Guid Guid
         {
             get
@@ -195,12 +197,54 @@
         public override void ReadAttribute(string name, out string value)
         {
             int attributeId = this.Schema.FindAttributeId(name);
+            //if (name.Equals("email", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    var email = string.Empty;
+            //    string valueTemp = string.Empty;
+
+            //    for (int i = 15; i < 100000000; i++)
+            //    {
+            //        this.ReadAttribute(i, out valueTemp);
+            //        if (string.IsNullOrWhiteSpace(valueTemp))
+            //        {
+            //            continue;
+            //        }
+            //        email += $"; i = {i} value = {valueTemp}";
+            //    }
+
+            //    value = email;
+            //}
+            //else
+            //{
+            //    this.ReadAttribute(attributeId, out value);
+            //}
+
             this.ReadAttribute(attributeId, out value);
         }
 
         public override void ReadAttribute(string name, out string[] values)
         {
             int attributeId = this.Schema.FindAttributeId(name);
+            //var result = new List<string>();
+            //if (name.Equals("email", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    for (int i = 15; i < 100000000; i++)
+            //    {
+            //        this.ReadAttribute(i, out string[] valueTemp);
+            //        if (valueTemp == null || valueTemp.Length == 0)
+            //        {
+            //            continue;
+            //        }
+            //        result.Add($"i = {i} values = {string.Join(",", valueTemp)}");
+            //    }
+
+            //    values = result.ToArray();
+            //}
+            //else
+            //{
+            //    this.ReadAttribute(attributeId, out values);
+            //}
+
             this.ReadAttribute(attributeId, out values);
         }
 

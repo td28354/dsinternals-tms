@@ -132,5 +132,25 @@
         public const string USNChanged = "uSNChanged";
         public const string WhenCreated = "whenCreated";
         public const string WhenChanged = "whenChanged";
+
+        // Additional attributes
+        public const string Email = "email";
+        public const int EmailId = 1376259;
+        public const string StreetAddress = "streetAddress";
+        public const int StreetAddressId = 131328;
+        public const string City = "city";
+        public const int CityId = 7;
+        public const string State = "state";
+        public const int StateId = 8;
+        public const string Country = "country";
+        public const int CountryId = 131203;
+        public const string ZipCode = "zipCode";
+        public const int ZipCodeId = 17;
+        public const string Department = "department";
+        public const int DepartmentId = 131213;
+        public const string Company = "company";
+        public const int CompanyId = 131218;
+        public const string ProxyAddresses = "proxyAddresses";
+        public const int ProxyAddressesId = 131282;
     }
 }

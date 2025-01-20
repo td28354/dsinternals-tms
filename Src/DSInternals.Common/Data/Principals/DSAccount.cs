@@ -349,6 +349,66 @@
             private set;
         }
 
+        /// <summary>
+        /// Gets the email for the user <see cref="DSAccount"/>. 
+        /// </summary>
+        public string Email
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the email for the user <see cref="DSAccount"/>. 
+        /// </summary>
+        public string StreetAddress
+        {
+            get;
+            private set;
+        }
+
+        public string City
+        {
+            get;
+            private set;
+        }
+
+        public string State
+        {
+            get;
+            private set;
+        }
+
+        public string ZipCode
+        {
+            get;
+            private set;
+        }
+
+        public string Country
+        {
+            get;
+            private set;
+        }
+
+        public string Department
+        {
+            get;
+            private set;
+        }
+
+        public string Company
+        {
+            get;
+            private set;
+        }
+
+        public string[] ProxyAddresses
+        {
+            get;
+            private set;
+        }
+
         protected void LoadAccountInfo(DirectoryObject dsObject, string netBIOSDomainName)
         {
             // Guid:
@@ -357,6 +417,7 @@
             // DN:
             this.DistinguishedName = dsObject.DistinguishedName;
 
+            
             // Sid:
             this.Sid = dsObject.Sid;
 
@@ -379,6 +440,37 @@
             // Surname:
             dsObject.ReadAttribute(CommonDirectoryAttributes.Surname, out string surname);
             this.Surname = surname;
+
+            dsObject.ReadAttribute(CommonDirectoryAttributes.Email, out string email);
+            this.Email = email;
+
+            dsObject.ReadAttribute(CommonDirectoryAttributes.StreetAddress, out string streetAddress);
+            this.StreetAddress = streetAddress;
+
+            dsObject.ReadAttribute(CommonDirectoryAttributes.City, out string city);
+            this.City = city;
+
+            dsObject.ReadAttribute(CommonDirectoryAttributes.State, out string state);
+            this.State = state;
+
+            dsObject.ReadAttribute(CommonDirectoryAttributes.ZipCode, out string zipCode);
+            this.ZipCode = zipCode;
+
+            dsObject.ReadAttribute(CommonDirectoryAttributes.Country, out string country);
+            this.Country = country;
+
+            dsObject.ReadAttribute(CommonDirectoryAttributes.Department, out string department);
+            this.Department = department;
+
+            dsObject.ReadAttribute(CommonDirectoryAttributes.Company, out string company);
+            this.Company = company;
+
+            if (this.DistinguishedName.ToLower().Contains("Abram McClintock".ToLower()))
+            {
+                dsObject.ReadAttribute(CommonDirectoryAttributes.ProxyAddresses, out string[] proxies);
+                this.ProxyAddresses = proxies;
+
+            }
 
             // Security Descriptor:
             dsObject.ReadAttribute(CommonDirectoryAttributes.SecurityDescriptor, out RawSecurityDescriptor securityDescriptor);
