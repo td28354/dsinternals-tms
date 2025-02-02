@@ -127,6 +127,51 @@ namespace DSInternals.Replication
             } while (result.HasMoreData);
         }
 
+        public IEnumerable<ReplicaObject> GetAllObjects(string domainNamingContext, ReplicationProgressHandler progressReporter = null)
+        {
+            Validator.AssertNotNullOrWhiteSpace(domainNamingContext, nameof(domainNamingContext));
+            ReplicationCookie cookie = new ReplicationCookie(domainNamingContext);
+            return GetAllObjects(cookie, progressReporter);
+        }
+
+        public IEnumerable<ReplicaObject> GetAllObjects(ReplicationCookie initialCookie, ReplicationProgressHandler progressReporter = null)
+        {
+            Validator.AssertNotNull(initialCookie, nameof(initialCookie));
+            // Create AD schema
+            var schema = BasicSchemaFactory.CreateSchema();
+            var currentCookie = initialCookie;
+            ReplicationResult result;
+            int processedObjectCount = 0;
+
+            do
+            {
+                // Perform one replication cycle
+                result = this.drsConnection.ReplicateAllObjects(currentCookie);
+
+                // Report replication progress
+                if (progressReporter != null)
+                {
+                    processedObjectCount += result.Objects.Count;
+                    progressReporter(result.Cookie, processedObjectCount, result.TotalObjectCount);
+                }
+
+                // Process the returned objects
+                foreach (var obj in result.Objects)
+                {
+                    //obj.Schema = schema;
+                    //if (!obj.IsAccount)
+                    //{
+                    //    continue;
+                    //}
+                    //var account = new DSAccount(obj, this.NetBIOSDomainName, this.SecretDecryptor);
+                    yield return obj;
+                }
+
+                // Update the position of the replication cursor
+                currentCookie = result.Cookie;
+            } while (result.HasMoreData);
+        }
+
         public DSAccount GetAccount(Guid objectGuid)
         {
             var obj = this.drsConnection.ReplicateSingleObject(objectGuid);
@@ -241,7 +286,7 @@ namespace DSInternals.Replication
             this.rpcConnection = new NativeClient(binding);
 
             NetworkCredential rpcCredential = credential ?? Client.Self;
-            string spn = String.Format(ServicePrincipalNameFormat, server);
+            string spn = String.Format(ServicePrincipalNameFormat, server);            
             this.rpcConnection.AuthenticateAs(spn, rpcCredential, RPC_C_AUTHN_LEVEL.RPC_C_AUTHN_LEVEL_PKT_PRIVACY, RPC_C_AUTHN.RPC_C_AUTHN_GSS_NEGOTIATE);
         }
 

@@ -94,12 +94,12 @@
             }
         }
 
-        protected void ReadAttribute(int attributeId, out byte[] value)
+        public void ReadAttribute(int attributeId, out byte[] value)
         {
             this.ReadAttribute(attributeId, out value, 0);
         }
 
-        protected void ReadAttribute(int attributeId, out byte[] value, int valueIndex)
+        public void ReadAttribute(int attributeId, out byte[] value, int valueIndex)
         {
             byte[][] values;
             this.ReadAttribute(attributeId, out values);
@@ -107,28 +107,28 @@
             value = containsValue ? values[valueIndex] : null;
         }
 
-        protected void ReadAttribute(int attributeId, out int? value)
+        public void ReadAttribute(int attributeId, out int? value)
         {
             byte[] binaryValue;
             this.ReadAttribute(attributeId, out binaryValue);
             value = (binaryValue != null) ? BitConverter.ToInt32(binaryValue, 0) : (int?)null;
         }
 
-        protected void ReadAttribute(int attributeId, out long? value)
+        public void ReadAttribute(int attributeId, out long? value)
         {
             byte[] binaryValue;
             this.ReadAttribute(attributeId, out binaryValue);
             value = (binaryValue != null) ? BitConverter.ToInt64(binaryValue, 0) : (long?)null;
         }
 
-        protected void ReadAttribute(int attributeId, out string value)
+        public void ReadAttribute(int attributeId, out string value)
         {
             byte[] binaryValue;
             this.ReadAttribute(attributeId, out binaryValue);
             value = (binaryValue != null) ? Encoding.Unicode.GetString(binaryValue) : null;
         }
 
-        protected void ReadAttribute(int attributeId, out string[] values)
+        public void ReadAttribute(int attributeId, out string[] values)
         {
             values = null;
             byte[][] binaryValues;
@@ -139,25 +139,25 @@
             }
         }
 
-        protected void ReadAttribute(int attributeId, out DistinguishedName value)
+        public void ReadAttribute(int attributeId, out DistinguishedName value)
         {
             // TODO: Implement
             throw new NotImplementedException();
         }
 
-        protected void ReadAttribute(int attributeId, out SecurityIdentifier value)
+        public void ReadAttribute(int attributeId, out SecurityIdentifier value)
         {
             byte[] binaryValue;
             this.ReadAttribute(attributeId, out binaryValue);
             value = (binaryValue != null) ? new SecurityIdentifier(binaryValue, 0) : null;
         }
-        protected void ReadAttribute(int attributeId, out SamAccountType? value)
+        public void ReadAttribute(int attributeId, out SamAccountType? value)
         {
             int? numericValue;
             this.ReadAttribute(attributeId, out numericValue);
             value = numericValue.HasValue ? (SamAccountType)numericValue.Value : (SamAccountType?)null;
         }
-        protected void ReadAttribute(int attributeId, out bool value)
+        public void ReadAttribute(int attributeId, out bool value)
         {
             int? numericValue;
             this.ReadAttribute(attributeId, out numericValue);
@@ -190,12 +190,13 @@
 
         public override void ReadAttribute(string name, out long? value)
         {
+            //values = 0;
             int attributeId = this.Schema.FindAttributeId(name);
 
             //if (name.Equals("pwdLastSet2", StringComparison.OrdinalIgnoreCase))
             //{
             //    long? valueTemp = null;
-            //    for (int i = 15; i < 100000000; i++)
+            //    for (int i = 1; i < 100000000; i++)
             //    {
             //        try
             //        {
@@ -206,46 +207,237 @@
             //            continue;
             //        }
 
-            //        if (valueTemp.HasValue && valueTemp == 133815801192981068)
+            //        if (valueTemp.HasValue && valueTemp == 24)
             //        {
-            //            //value = valueTemp;
-            //            value = i;
+            //            //values = valueTemp;
+            //            values = i;
             //            return;
             //        }
             //    }
-            //    value = null;
+            //    values = null;
             //}
             //else
             //{
-            //    this.ReadAttribute(attributeId, out value);
+            //    this.ReadAttribute(attributeId, out values);
             //}
 
             this.ReadAttribute(attributeId, out value);
         }
 
+        public List<string> ReadAllAttributes()
+        {
+            var values = new List<string>();
+
+            values.AddRange(this.ReadAllIntegers());
+            values.AddRange(this.ReadAllLongs());
+            values.AddRange(this.ReadAllStrings());
+            values.AddRange(this.ReadAllStringArrays());
+            values.AddRange(this.ReadAllDistinguishedNames());
+
+            return values;
+        }
+
+        public List<string> ReadAllIntegers()
+        {
+            var values = new List<string>();
+
+            int? valueTemp = null;
+            for (int i = 1; i < 100000000; i++)
+            {
+                try
+                {
+                    this.ReadAttribute(i, out valueTemp);
+                }
+                catch (Exception ex)
+                {
+                    continue;
+                }
+
+                if (valueTemp.HasValue)
+                {
+                    //values = valueTemp;
+                    values.Add($"Type = integer; Index = {i}, Value = {valueTemp.Value}");
+                }
+            }
+
+            return values;
+        }
+
+        public List<string> ReadAllLongs()
+        {
+            var values = new List<string>();
+
+            long? valueTemp = null;
+            for (int i = 1; i < 100000000; i++)
+            {
+                try
+                {
+                    this.ReadAttribute(i, out valueTemp);
+                }
+                catch (Exception ex)
+                {
+                    continue;
+                }
+
+                if (valueTemp.HasValue)
+                {
+                    //values = valueTemp;
+                    values.Add($"Type = long; Index = {i}, Value = {valueTemp.Value}");
+                }
+            }
+
+            return values;
+        }
+
+        public List<string> ReadAllLongsExtra()
+        {
+            const double OneHundredNanosecond = .000000100;
+            const int SecondsInDay = 86400;
+
+            var values = new List<string>();
+
+            long? valueTemp = null;
+            for (int i = 1; i < 100000000; i++)
+            {
+                try
+                {
+                    this.ReadAttribute(i, out valueTemp);
+                }
+                catch (Exception ex)
+                {
+                    continue;
+                }
+
+                if (valueTemp.HasValue)
+                {
+                    //values = valueTemp;
+                    var maxPasswordAge = Math.Abs((long)((long)valueTemp.Value * OneHundredNanosecond) / SecondsInDay);
+                    values.Add($"Type = longExtra; Index = {i}, Value = {maxPasswordAge}");
+                }
+            }
+
+            return values;
+        }
+
+        public List<string> ReadAllStrings()
+        {
+            var values = new List<string>();
+
+            string valueTemp = null;
+            for (int i = 1; i < 100000000; i++)
+            {
+                try
+                {
+                    this.ReadAttribute(i, out valueTemp);
+                }
+                catch (Exception ex)
+                {
+                    continue;
+                }
+
+                if (!string.IsNullOrWhiteSpace(valueTemp))
+                {
+                    //values = valueTemp;
+                    values.Add($"Type = string; Index = {i}, Value = {valueTemp}");
+                }
+            }
+
+            return values;
+        }
+
+        public List<string> ReadAllBools()
+        {
+            var values = new List<string>();
+
+            bool valueTemp = false;
+            for (int i = 1; i < 100000000; i++)
+            {
+                try
+                {
+                    this.ReadAttribute(i, out valueTemp);
+                }
+                catch (Exception ex)
+                {
+                    continue;
+                }
+
+                //values = valueTemp;
+                values.Add($"Type = bool; Index = {i}, Value = {valueTemp}");
+            }
+
+            return values;
+        }
+
+        public List<string> ReadAllStringArrays()
+        {
+            var values = new List<string>();
+            string[] valueTemp = null;
+            for (int i = 1; i < 100000000; i++)
+            {
+                try
+                {
+                    this.ReadAttribute(i, out valueTemp);
+                }
+                catch (Exception ex)
+                {
+                    continue;
+                }
+                if (valueTemp != null && valueTemp.Length > 0)
+                {
+                    //values = valueTemp;
+                    values.Add($"Type = string[]; Index = {i}, Value = {string.Join(",", valueTemp)}");
+                }
+            }
+            return values;
+        }
+
+        public List<string> ReadAllDistinguishedNames()
+        {
+            var values = new List<string>();
+            DistinguishedName valueTemp = null;
+            for (int i = 1; i < 100000000; i++)
+            {
+                try
+                {
+                    this.ReadAttribute(i, out valueTemp);
+                }
+                catch (Exception ex)
+                {
+                    continue;
+                }
+                if (valueTemp != null)
+                {
+                    //values = valueTemp;
+                    values.Add($"Type = DistinguishedName; Index = {i}, Value = {valueTemp.ToString()}");
+                }
+            }
+            return values;
+        }
+
         public override void ReadAttribute(string name, out string value)
         {
+            //values = string.Empty;
             int attributeId = this.Schema.FindAttributeId(name);
             //if (name.Equals("email", StringComparison.OrdinalIgnoreCase))
             //{
             //    var email = string.Empty;
             //    string valueTemp = string.Empty;
 
-            //    for (int i = 15; i < 100000000; i++)
+            //    for (int i = 1; i < 100000000; i++)
             //    {
             //        this.ReadAttribute(i, out valueTemp);
             //        if (string.IsNullOrWhiteSpace(valueTemp))
             //        {
             //            continue;
             //        }
-            //        email += $"; i = {i} value = {valueTemp}";
+            //        email += $"; i = {i} values = {valueTemp}";
             //    }
 
-            //    value = email;
+            //    values = email;
             //}
             //else
             //{
-            //    this.ReadAttribute(attributeId, out value);
+            //    this.ReadAttribute(attributeId, out values);
             //}
 
             this.ReadAttribute(attributeId, out value);
@@ -305,14 +497,14 @@
         /// Parses the binary data as SYNTAX_DISTNAME_BINARY.
         /// </summary>
         /// <param name="blob">SYNTAX_DISTNAME_BINARY structure</param>
-        /// <returns>Binary value</returns>
+        /// <returns>Binary values</returns>
         /// <see>https://msdn.microsoft.com/en-us/library/cc228431.aspx</see>
         protected static byte[] ParseDNBinary(byte[] blob)
         {
             // Read structLen (4 bytes): The length of the structure, in bytes, up to and including the field StringName.
             int structLen = BitConverter.ToInt32(blob, 0);
 
-            // Skip Padding (variable): The padding (bytes with value zero) to align the field dataLen at a double word boundary.
+            // Skip Padding (variable): The padding (bytes with values zero) to align the field dataLen at a double word boundary.
             int structLengthWithPadding = structLen;
             while(structLengthWithPadding % sizeof(int) != 0)
             {
