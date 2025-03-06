@@ -1,0 +1,22 @@
+name: Sync DSInternals to dsinternals-tms
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Runs daily at midnight UTC
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Destination Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Ensures full commit history
+
+      - name: Add DSInternals as Remote and Sync
+        run: |
+          git remote add dsinternals https://github.com/MichaelGrafnetter/DSInternals.git
+          git fetch dsinternals master
+          git checkout -B master dsinternals/master
+          git push origin master --force
