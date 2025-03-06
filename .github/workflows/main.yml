@@ -9,14 +9,18 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Destination Repository
+      - name: Checkout Your Repository (td28354/dsinternals-tms)
         uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Ensures full commit history
 
-      - name: Add DSInternals as Remote and Sync
+      - name: Add DSInternals as Upstream and Fetch Changes
         run: |
-          git remote add dsinternals https://github.com/MichaelGrafnetter/DSInternals.git
-          git fetch dsinternals master
-          git checkout -B master dsinternals/master
-          git push origin master --force
+          git remote add upstream https://github.com/MichaelGrafnetter/DSInternals.git || true
+          git fetch upstream master
+
+      - name: Merge Upstream Changes into Your Repository
+        run: |
+          git checkout master
+          git merge upstream/master --allow-unrelated-histories || true
+          git push origin master
