@@ -8,7 +8,7 @@
 RootModule = 'DSInternals.Bootstrap.psm1'
 
 # Version number of this module.
-ModuleVersion = '4.9'
+ModuleVersion = '4.16'
 
 # Supported PSEditions
 # CompatiblePSEditions = 'Desktop'
@@ -23,7 +23,7 @@ Author = 'Michael Grafnetter'
 CompanyName = 'DSInternals'
 
 # Copyright statement for this module
-Copyright = '(c) 2015-2023 Michael Grafnetter. All rights reserved.'
+Copyright = '(c) 2015-2025 Michael Grafnetter. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = @"
@@ -56,6 +56,7 @@ FormatsToProcess = 'Views\DSInternals.AzureADUser.format.ps1xml',
                    'Views\DSInternals.FidoKeyMaterial.format.ps1xml',
                    'Views\DSInternals.DSAccount.format.ps1xml',
                    'Views\DSInternals.DSAccount.ExportViews.format.ps1xml',
+                   'Views\DSInternals.GroupManagedServiceAccount.format.ps1xml',
                    'Views\DSInternals.PasswordQualityTestResult.format.ps1xml',
                    'Views\DSInternals.KdsRootKey.format.ps1xml',
                    'Views\DSInternals.SamDomainPasswordInformation.format.ps1xml',
@@ -71,19 +72,19 @@ FunctionsToExport = @()
 CmdletsToExport = 'ConvertTo-NTHash', 'ConvertTo-LMHash', 'Set-SamAccountPasswordHash',
                   'ConvertFrom-UnicodePassword', 'ConvertTo-UnicodePassword',
                   'ConvertTo-OrgIdHash', 'ConvertFrom-GPPrefPassword',
-                  'ConvertTo-GPPrefPassword', 'Add-ADDBSidHistory',
+                  'ConvertTo-GPPrefPassword', # 'Add-ADDBSidHistory',
                   'Set-ADDBPrimaryGroup', 'Get-ADDBDomainController',
                   'Set-ADDBDomainController', 'Get-ADDBSchemaAttribute',
                   'Remove-ADDBObject', 'Get-ADDBAccount', 'Get-BootKey',
                   'Get-ADReplAccount', 'ConvertTo-Hex', 'ConvertTo-KerberosKey',
                   'ConvertFrom-ADManagedPasswordBlob',
                   'Get-ADDBBackupKey', 'Get-ADReplBackupKey', 'Save-DPAPIBlob',
-                  'Set-ADDBBootKey', 'Test-PasswordQuality',
+                  'Set-ADDBBootKey', 'Test-PasswordQuality', 'Get-ADDBServiceAccount',
                   'Get-ADDBKdsRootKey', 'Get-SamPasswordPolicy', 'Get-ADSIAccount',
                   'Enable-ADDBAccount', 'Disable-ADDBAccount', 'Get-ADKeyCredential',
                   'Set-ADDBAccountPassword', 'Set-ADDBAccountPasswordHash', 'Get-LsaPolicyInformation',
                   'Set-LSAPolicyInformation', 'New-ADDBRestoreFromMediaScript','Get-LsaBackupKey',
-                  'Add-ADReplNgcKey', 'Get-AzureADUserEx', 'Set-AzureADUserEx'
+                  'Add-ADReplNgcKey', 'Get-AzureADUserEx', 'Set-AzureADUserEx','Unlock-ADDBAccount'
 
 # Variables to export from this module
 VariablesToExport = @()
@@ -99,7 +100,7 @@ AliasesToExport = 'Set-WinUserPasswordHash', 'Set-ADAccountPasswordHash',
                   'Get-KeyCredentialLink', 'Get-ADKeyCredentialLink', 'Get-LsaPolicy',
                   'Set-LsaPolicy', 'Get-SystemKey', 'Write-ADReplNgcKey', 'Write-ADNgcKey',
                   'Add-ADNgcKey', 'New-ADKeyCredential', 'New-ADKeyCredentialLink',
-                  'New-ADNgcKey'
+                  'New-ADNgcKey','Get-ADDBGroupManagedServiceAccount'
 
 # List of assemblies that must be loaded prior to importing this module
 RequiredAssemblies = @('DSInternals.Common.dll')
@@ -142,8 +143,7 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-- Implemented the FIPS compliance requirement and OS checks.
-- The Get-BootKey cmdlet should now be able to read inconsistent/corrupted SYSTEM registry hives.
+- The New-ADDBRestoreFromMediaScript cmdlet now properly sets the "Configuration NC", "Root Domain", and "Machine DN Name" registry values under the "HKLM\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" key.
 "@
     } # End of PSData hashtable
 

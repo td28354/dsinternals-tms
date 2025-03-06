@@ -136,6 +136,60 @@
             }
         }
 
+        public IEnumerable<GroupManagedServiceAccount> GetGroupManagedServiceAccounts(DateTime effectiveTime)
+        {
+            // Fetch all KDS root keys first.
+            var rootKeys = new Dictionary<Guid, KdsRootKey>();
+            KdsRootKey latestRootKey = null;
+
+            foreach (var rootKey in this.GetKdsRootKeys())
+            {
+                // Some servers, like RODCs might not contain key values
+                if (rootKey.KeyValue != null)
+                {
+                    // Allow the key to be found by ID
+                    rootKeys.Add(rootKey.KeyId, rootKey);
+
+                    // Check if this key is the newest found yet
+                    if(rootKey.EffectiveTime <= effectiveTime && (latestRootKey == null || latestRootKey.CreationTime < rootKey.CreationTime))
+                    {
+                        latestRootKey = rootKey;
+                    }
+                }
+            }
+
+            // Now fetch all gMSAs and associate them with the KDS root keys
+            // TODO: Test if schema contains the msDS-GroupManagedServiceAccount class.
+            foreach (var gmsaObject in this.FindObjectsByCategory(CommonDirectoryClasses.GroupManagedServiceAccount))
+            {
+                var gmsa = new GroupManagedServiceAccount(gmsaObject);
+
+                if (gmsa.ManagedPasswordId != null)
+                {
+                    DateTime nextPasswordChange = gmsa.PasswordLastSet.Value.AddDays(gmsa.ManagedPasswordInterval.Value);
+                    KdsRootKey rootKeyToUse;
+                    if (nextPasswordChange <= effectiveTime)
+                    {
+                        // The existing password has already expired, so generate the managed password based on the latest Root Key
+                        rootKeyToUse = latestRootKey;
+                    }
+                    else
+                    {
+                        // Generate the managed password based on the Root Key currently associated with it
+                        Guid associateRootKeyId = gmsa.ManagedPasswordId.RootKeyId;
+                        rootKeys.TryGetValue(associateRootKeyId, out rootKeyToUse);
+                    }
+
+                    if (rootKeyToUse != null)
+                    {
+                        gmsa.CalculatePassword(rootKeyToUse, effectiveTime);
+                    }
+                }
+
+                yield return gmsa;
+            }
+        }
+
         public IEnumerable<DirectoryObject> FindObjectsByCategory(string className, bool includeDeleted = false)
         {
             // Find all objects with the right objectCategory
@@ -323,6 +377,30 @@
             return this.SetAccountStatus(obj, objectGuid, enabled, skipMetaUpdate);
         }
 
+        public bool UnlockAccount(DistinguishedName dn, bool skipMetaUpdate)
+        {
+            var obj = this.FindObject(dn);
+            return this.UnlockAccount(obj, dn, skipMetaUpdate);
+        }
+
+        public bool UnlockAccount(string samAccountName, bool skipMetaUpdate)
+        {
+            var obj = this.FindObject(samAccountName);
+            return this.UnlockAccount(obj, samAccountName, skipMetaUpdate);
+        }
+
+        public bool UnlockAccount(SecurityIdentifier objectSid, bool skipMetaUpdate)
+        {
+            var obj = this.FindObject(objectSid);
+            return this.UnlockAccount(obj, objectSid, skipMetaUpdate);
+        }
+
+        public bool UnlockAccount(Guid objectGuid, bool skipMetaUpdate)
+        {
+            var obj = this.FindObject(objectGuid);
+            return this.UnlockAccount(obj, objectGuid, skipMetaUpdate);
+        }
+
         public bool SetPrimaryGroupId(DistinguishedName dn, int groupId, bool skipMetaUpdate)
         {
             var obj = this.FindObject(dn);
@@ -436,6 +514,27 @@
                 this.dataTableCursor.BeginEditForUpdate();
                 bool hasChanged = targetObject.SetAttribute<int>(CommonDirectoryAttributes.UserAccountControl, (int?)uac);
                 this.CommitAttributeUpdate(targetObject, CommonDirectoryAttributes.UserAccountControl, transaction, hasChanged, skipMetaUpdate);
+                return hasChanged;
+            }
+        }
+
+        protected bool UnlockAccount(DatastoreObject targetObject, object targetObjectIdentifier, bool skipMetaUpdate)
+        {
+            if (!targetObject.IsAccount)
+            {
+                throw new DirectoryObjectOperationException(Resources.ObjectNotAccountMessage, targetObjectIdentifier);
+            }
+
+            using (var transaction = this.context.BeginTransaction())
+            {
+                this.dataTableCursor.BeginEditForUpdate();
+                bool hasChanged = targetObject.SetAttribute(CommonDirectoryAttributes.LockoutTime, DateTime.MinValue);
+
+                // Even if the account had previously been unlocked locally,
+                // the current unlock operation still needs to be made authoritative for other DCs.
+                hasChanged = hasChanged || !skipMetaUpdate;
+
+                this.CommitAttributeUpdate(targetObject, CommonDirectoryAttributes.LockoutTime, transaction, hasChanged, skipMetaUpdate);
                 return hasChanged;
             }
         }
