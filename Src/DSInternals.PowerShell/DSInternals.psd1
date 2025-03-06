@@ -8,7 +8,7 @@
 RootModule = 'DSInternals.Bootstrap.psm1'
 
 # Version number of this module.
-ModuleVersion = '4.16'
+ModuleVersion = '5.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = 'Desktop'
@@ -54,13 +54,18 @@ FormatsToProcess = 'Views\DSInternals.AzureADUser.format.ps1xml',
                    'Views\DSInternals.Kerberos.format.ps1xml',
                    'Views\DSInternals.KeyCredential.format.ps1xml',
                    'Views\DSInternals.FidoKeyMaterial.format.ps1xml',
-                   'Views\DSInternals.DSAccount.format.ps1xml',
+                   'Views\DSInternals.BitLockerRecoveryInformation.format.ps1xml',
+                   'Views\DSInternals.LapsPasswordInformation.format.ps1xml',
                    'Views\DSInternals.DSAccount.ExportViews.format.ps1xml',
+                   'Views\DSInternals.DSAccount.format.ps1xml',
+                   'Views\DSInternals.DSUser.format.ps1xml',
+                   'Views\DSInternals.DSComputer.format.ps1xml',
                    'Views\DSInternals.GroupManagedServiceAccount.format.ps1xml',
                    'Views\DSInternals.PasswordQualityTestResult.format.ps1xml',
                    'Views\DSInternals.KdsRootKey.format.ps1xml',
                    'Views\DSInternals.SamDomainPasswordInformation.format.ps1xml',
-                   'Views\DSInternals.LsaPolicyInformation.format.ps1xml'
+                   'Views\DSInternals.LsaPolicyInformation.format.ps1xml',
+                   'Views\DSInternals.DnsResourceRecord.format.ps1xml'
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @('DSInternals.PowerShell.dll')
@@ -79,12 +84,13 @@ CmdletsToExport = 'ConvertTo-NTHash', 'ConvertTo-LMHash', 'Set-SamAccountPasswor
                   'Get-ADReplAccount', 'ConvertTo-Hex', 'ConvertTo-KerberosKey',
                   'ConvertFrom-ADManagedPasswordBlob',
                   'Get-ADDBBackupKey', 'Get-ADReplBackupKey', 'Save-DPAPIBlob',
-                  'Set-ADDBBootKey', 'Test-PasswordQuality', 'Get-ADDBServiceAccount',
+                  'Set-ADDBBootKey', 'Test-PasswordQuality', 'Get-ADDBServiceAccount','Get-ADDBBitLockerRecoveryInformation',
                   'Get-ADDBKdsRootKey', 'Get-SamPasswordPolicy', 'Get-ADSIAccount',
                   'Enable-ADDBAccount', 'Disable-ADDBAccount', 'Get-ADKeyCredential',
                   'Set-ADDBAccountPassword', 'Set-ADDBAccountPasswordHash', 'Get-LsaPolicyInformation',
                   'Set-LSAPolicyInformation', 'New-ADDBRestoreFromMediaScript','Get-LsaBackupKey',
-                  'Add-ADReplNgcKey', 'Get-AzureADUserEx', 'Set-AzureADUserEx','Unlock-ADDBAccount'
+                  'Add-ADReplNgcKey', 'Get-AzureADUserEx', 'Set-AzureADUserEx','Unlock-ADDBAccount',
+                  'Get-ADDBDnsResourceRecord'
 
 # Variables to export from this module
 VariablesToExport = @()
@@ -100,7 +106,10 @@ AliasesToExport = 'Set-WinUserPasswordHash', 'Set-ADAccountPasswordHash',
                   'Get-KeyCredentialLink', 'Get-ADKeyCredentialLink', 'Get-LsaPolicy',
                   'Set-LsaPolicy', 'Get-SystemKey', 'Write-ADReplNgcKey', 'Write-ADNgcKey',
                   'Add-ADNgcKey', 'New-ADKeyCredential', 'New-ADKeyCredentialLink',
-                  'New-ADNgcKey','Get-ADDBGroupManagedServiceAccount'
+                  'New-ADNgcKey', 'Get-ADDBGroupManagedServiceAccount', 'Get-ADDBBitLockerRecoveryInfo', 'Get-ADDBBitLockerKeyProtector',
+                  'Get-ADDBBitLockerRecoveryKey', 'Get-ADDBBitLockerKey', 'Get-ADDBBitLockerRecoveryPassword',
+                  'Get-ADDBFVERecoveryKey', 'Get-ADDBFVERecoveryPassword',
+                  'Get-ADDBFVERecoveryInformation', 'Get-ADDBFVERecoveryInfo', 'Get-ADDBDnsRecord'
 
 # List of assemblies that must be loaded prior to importing this module
 RequiredAssemblies = @('DSInternals.Common.dll')
@@ -118,6 +127,10 @@ FileList = 'AutoMapper.dll',
            'NDceRpc.Microsoft.dll',
            'Newtonsoft.Json.dll',
            'Numbers.dll',
+           'System.Buffers.dll',
+           'System.Memory.dll',
+           'System.Numerics.Vectors.dll',
+           'System.Runtime.CompilerServices.Unsafe.dll',
            'amd64\DSInternals.Replication.Interop.dll',
            'arm64\DSInternals.Replication.Interop.dll',
            'x86\DSInternals.Replication.Interop.dll',
@@ -130,7 +143,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = 'ActiveDirectory', 'AzureAD', 'Security', 'SAM', 'LSA', 'PSModule', 'Windows', 'FIDO', 'NTDS'
+        Tags = 'ActiveDirectory', 'AzureAD', 'Security', 'SAM', 'LSA', 'DNS', 'BitLocker', 'LAPS', 'PSModule', 'Windows', 'FIDO', 'NTDS'
 
         # A URL to the license for this module.
         LicenseUri = 'https://github.com/MichaelGrafnetter/DSInternals/blob/master/Src/DSInternals.PowerShell/License.txt'
@@ -143,7 +156,12 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-- The New-ADDBRestoreFromMediaScript cmdlet now properly sets the "Configuration NC", "Root Domain", and "Machine DN Name" registry values under the "HKLM\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" key.
+- Added the Get-ADDBBitLockerRecoveryInformation cmdlet for retrieving BitLocker recovery keys from ntds.dit files.
+- Added the Get-ADDBDnsResourceRecord cmdlet for retrieving DNS resource records from ntds.dit files.
+- The Get-ADDBAccount, Get-ADReplAccount, and Get-ADSIAccount cmdlets have a new parameter called -Properties for specifying the properties to be fetched, which greatly increases the performance.
+- The Get-ADDBAccount and Get-ADReplAccount cmdlets have a new parameter called -ExportFormat, which replaces the Format-Custom cmdlet when exporting data to hashcat, pwdump, and other formats.
+- Legacy LAPS and Windows LAPS cleartext passwords can now be extracted from ntds.dit files using the Get-ADDBAccount cmdlet. 
+- More user and computer attributes can optionally be retrieved by the Get-ADDBAccount, Get-ADReplAccount, and Get-ADSIAccount cmdlets, including email addresses, phone numbers, managers, and OS versions.
 "@
     } # End of PSData hashtable
 

@@ -1,20 +1,22 @@
-﻿using DSInternals.Common;
+﻿using System;
+using System.Management.Automation;
 using DSInternals.Common.Cryptography;
 using DSInternals.Common.Data;
 using DSInternals.DataStore;
 using DSInternals.PowerShell.Properties;
-using System;
-using System.Management.Automation;
 
 namespace DSInternals.PowerShell.Commands
 {
     [Cmdlet(VerbsCommon.Get, "ADDBAccount")]
-    [OutputType(typeof(DSAccount))]
+    [OutputType(typeof(DSAccount), typeof(DSUser), typeof(DSComputer))]
     public class GetADDBAccountCommand : ADDBPrincipalCommandBase
     {
-        private const int ProgressReportingInterval = 25;
+        #region Constants
+        private uint ProgressReportingInterval = 200;
         protected const string ParameterSetAll = "All";
+        #endregion Constants
 
+        #region Parameters
         [Parameter(Mandatory = true, ParameterSetName = ParameterSetAll)]
         [Alias("AllAccounts", "ReturnAllAccounts")]
         public SwitchParameter All
@@ -22,6 +24,15 @@ namespace DSInternals.PowerShell.Commands
             get;
             set;
         }
+
+        [Parameter(Mandatory = false)]
+        [Alias("Property", "PropertySets", "PropertySet")]
+        [PSDefaultValue(Value = "All")]
+        public AccountPropertySets Properties
+        {
+            get;
+            set;
+        } = AccountPropertySets.All;
 
         [Parameter(Mandatory = false)]
         [ValidateNotNull]
@@ -34,31 +45,79 @@ namespace DSInternals.PowerShell.Commands
             set;
         }
 
-        protected override void ProcessRecord()
+        [Parameter(Mandatory = false)]
+        [Alias("View", "ExportView", "Format")]
+        [ValidateSet(
+            "JohnNT",
+            "JohnNTHistory",
+            "JohnLM",
+            "JohnLMHistory",
+            "HashcatNT",
+            "HashcatNTHistory",
+            "HashcatLM",
+            "HashcatLMHistory",
+            "NTHash",
+            "NTHashHistory",
+            "LMHash",
+            "LMHashHistory",
+            "Ophcrack",
+            "PWDump",
+            "PWDumpHistory"
+        )]
+        public AccountExportFormat? ExportFormat
         {
-            // TODO: Exception handling: Object not found, malformed DN, ...
-            // TODO: Map DSAccount to transfer object
-            if(this.ParameterSetName == ParameterSetAll)
+            get;
+            set;
+        }
+
+        #endregion Parameters
+
+        #region Cmdlet Overrides
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+
+            if(this.ExportFormat != null)
             {
-                this.ReturnAllAccounts(this.BootKey);
+                // Override the property sets to match the requirements of the export formats.
+                this.Properties = this.ExportFormat.GetRequiredProperties();
             }
-            else
+
+            // Check if any of the secret attributes is to be loaded
+            bool secretsShouldBeDecrypted = (this.Properties & AccountPropertySets.Secrets) != AccountPropertySets.None;
+
+            if (this.BootKey == null && secretsShouldBeDecrypted)
             {
-                this.ReturnSingleAccount(this.BootKey);
+                this.WriteWarning("Password hashes cannot be decrypted as no system key has been provided.");
             }
         }
 
-        private void ReturnAllAccounts(byte[] bootKey)
+        protected override void ProcessRecord()
+        {
+            // TODO: Exception handling: Object not found, malformed DN, ...
+            if (this.ParameterSetName == ParameterSetAll)
+            {
+                this.ReturnAllAccounts();
+            }
+            else
+            {
+                this.ReturnSingleAccount();
+            }
+        }
+        #endregion Cmdlet Overrides
+
+        #region Helper Methods
+        private void ReturnAllAccounts()
         {
             // This operation might take some time so we report its status.
             var progress = new ProgressRecord(4, "Reading accounts from AD database", "Starting...");
-            int accountCount = 0;
+            ulong accountCount = 0;
 
             // Disable the progress bar as we do not know the total number of accounts.
             progress.PercentComplete = -1;
             this.WriteProgress(progress);
 
-            foreach (var account in this.DirectoryAgent.GetAccounts(bootKey))
+            foreach (var account in this.DirectoryAgent.GetAccounts(this.BootKey, this.Properties))
             {
                 this.WriteObject(account);
                 accountCount++;
@@ -77,33 +136,52 @@ namespace DSInternals.PowerShell.Commands
             this.WriteProgress(progress);
         }
 
-        private void ReturnSingleAccount(byte[] bootKey)
+        private void ReturnSingleAccount()
         {
             DSAccount account;
             switch (this.ParameterSetName)
             {
-                case parameterSetByDN:
+                case ParameterSetByDN:
                     var dn = new DistinguishedName(this.DistinguishedName);
-                    account = this.DirectoryAgent.GetAccount(dn, bootKey);
+                    account = this.DirectoryAgent.GetAccount(dn, this.BootKey, this.Properties);
                     break;
 
-                case parameterSetByName:
-                    account = this.DirectoryAgent.GetAccount(this.SamAccountName, bootKey);
+                case ParameterSetByName:
+                    account = this.DirectoryAgent.GetAccount(this.SamAccountName, this.BootKey, this.Properties);
                     break;
 
-                case parameterSetByGuid:
-                    account = this.DirectoryAgent.GetAccount(this.ObjectGuid, bootKey);
+                case ParameterSetByGuid:
+                    account = this.DirectoryAgent.GetAccount(this.ObjectGuid, this.BootKey, this.Properties);
                     break;
 
-                case parameterSetBySid:
-                    account = this.DirectoryAgent.GetAccount(this.ObjectSid, bootKey);
+                case ParameterSetBySid:
+                    account = this.DirectoryAgent.GetAccount(this.ObjectSid, this.BootKey, this.Properties);
                     break;
 
                 default:
                     // This should never happen:
                     throw new PSInvalidOperationException(Resources.InvalidParameterSetMessage);
             }
+
             this.WriteObject(account);
         }
+
+        private new void WriteObject(object sendToPipeline)
+        {
+            if (this.ExportFormat != null)
+            {
+                // Add a virtual type to the object to change the default out-of-band View, e.g., DSInternals.Common.Data.DSAccount#PwDump.
+                PSObject psObject = PSObject.AsPSObject(sendToPipeline);
+                string virtualTypeName = String.Format("{0}#{1}", typeof(DSAccount).FullName, this.ExportFormat.ToString());
+                psObject.TypeNames.Insert(0, virtualTypeName);
+                base.WriteObject(psObject);
+            }
+            else
+            {
+                // Pass-through the original object without any changes.
+                base.WriteObject(sendToPipeline);
+            }
+        }
+        #endregion Helper Methods
     }
 }

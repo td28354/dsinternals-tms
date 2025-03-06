@@ -116,7 +116,6 @@
         #endregion Parameters
 
         #region Fields
-
         /// <summary>
         /// Maps password hashes to lists of account names.
         /// </summary>
