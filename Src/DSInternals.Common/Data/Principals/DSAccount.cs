@@ -484,16 +484,6 @@
                 this.PwdLastSet = DateTime.FromFileTime(pwdLastChanges.Value);
             }
 
-            //if (this.DistinguishedName.ToLower().Contains("Abram McClintock".ToLower()))
-            //{
-            //    dsObject.ReadAttribute(CommonDirectoryAttributes.pwdLastSet2, out long? pwdLastChanges);
-            //    if(pwdLastChanges.HasValue)
-            //    {
-            //        this.PwdLastSet = DateTime.FromFileTime(pwdLastChanges.Value);
-            //    }
-
-            //}
-
             // Security Descriptor:
             dsObject.ReadAttribute(CommonDirectoryAttributes.SecurityDescriptor, out RawSecurityDescriptor securityDescriptor);
             this.SecurityDescriptor = securityDescriptor;
