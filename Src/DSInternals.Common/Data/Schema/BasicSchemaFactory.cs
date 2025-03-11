@@ -85,6 +85,10 @@
 
             // TODO: LAPS
 
+            // Custom attributes
+            attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.ProxyAddressesId, CommonDirectoryAttributes.ProxyAddresses, AttributeSyntax.String));
+            attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.pwdLastSet2Id, CommonDirectoryAttributes.pwdLastSet2, AttributeSyntax.Int64));
+
             return new BasicSchema(attributes);
         }
     }

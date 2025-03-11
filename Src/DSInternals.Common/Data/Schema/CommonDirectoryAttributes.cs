@@ -230,5 +230,11 @@
         public const string WindowsLapsCurrentPasswordVersion = "msLAPS-CurrentPasswordVersion";
         public const string DnsRecord = "dnsRecord";
         public const string DnsTombstoned = "dNSTombstoned";
+
+        // Custom attributes
+        public const string ProxyAddresses = "proxyAddresses";
+        public const int ProxyAddressesId = 131282;
+        public const string pwdLastSet2 = "pwdLastSet2";
+        public const int pwdLastSet2Id = 589920;
     }
 }
