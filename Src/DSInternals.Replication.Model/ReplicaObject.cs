@@ -71,12 +71,12 @@ namespace DSInternals.Replication.Model
             }
         }
 
-        protected bool HasAttribute(int attributeId)
+        public bool HasAttribute(int attributeId)
         {
             return this.Attributes.ContainsKey(attributeId);
         }
 
-        protected void ReadAttribute(int attributeId, out byte[][] values)
+        public void ReadAttribute(int attributeId, out byte[][] values)
         {
             values = null;
             ReplicaAttribute attribute;
@@ -91,12 +91,12 @@ namespace DSInternals.Replication.Model
             }
         }
 
-        protected void ReadAttribute(int attributeId, out byte[] value)
+        public void ReadAttribute(int attributeId, out byte[] value)
         {
             this.ReadAttribute(attributeId, out value, 0);
         }
 
-        protected void ReadAttribute(int attributeId, out byte[] value, int valueIndex)
+        public void ReadAttribute(int attributeId, out byte[] value, int valueIndex)
         {
             byte[][] values;
             this.ReadAttribute(attributeId, out values);
@@ -104,28 +104,28 @@ namespace DSInternals.Replication.Model
             value = containsValue ? values[valueIndex] : null;
         }
 
-        protected void ReadAttribute(int attributeId, out int? value)
+        public void ReadAttribute(int attributeId, out int? value)
         {
             byte[] binaryValue;
             this.ReadAttribute(attributeId, out binaryValue);
             value = (binaryValue != null) ? BitConverter.ToInt32(binaryValue, 0) : (int?)null;
         }
 
-        protected void ReadAttribute(int attributeId, out long? value)
+        public void ReadAttribute(int attributeId, out long? value)
         {
             byte[] binaryValue;
             this.ReadAttribute(attributeId, out binaryValue);
             value = (binaryValue != null) ? BitConverter.ToInt64(binaryValue, 0) : (long?)null;
         }
 
-        protected void ReadAttribute(int attributeId, out string value)
+        public void ReadAttribute(int attributeId, out string value)
         {
             byte[] binaryValue;
             this.ReadAttribute(attributeId, out binaryValue);
             value = (binaryValue != null) ? Encoding.Unicode.GetString(binaryValue) : null;
         }
 
-        protected void ReadAttribute(int attributeId, out string[] values)
+        public void ReadAttribute(int attributeId, out string[] values)
         {
             values = null;
             byte[][] binaryValues;
@@ -136,26 +136,26 @@ namespace DSInternals.Replication.Model
             }
         }
 
-        protected void ReadAttribute(int attributeId, out DistinguishedName value)
+        public void ReadAttribute(int attributeId, out DistinguishedName value)
         {
             // TODO: Implement support for DS-DN syntax.
             // Hint: https://github.com/MichaelGrafnetter/DSInternals/issues/49
             throw new NotImplementedException();
         }
 
-        protected void ReadAttribute(int attributeId, out SecurityIdentifier value)
+        public void ReadAttribute(int attributeId, out SecurityIdentifier value)
         {
             byte[] binaryValue;
             this.ReadAttribute(attributeId, out binaryValue);
             value = (binaryValue != null) ? new SecurityIdentifier(binaryValue, 0) : null;
         }
-        protected void ReadAttribute(int attributeId, out SamAccountType? value)
+        public void ReadAttribute(int attributeId, out SamAccountType? value)
         {
             int? numericValue;
             this.ReadAttribute(attributeId, out numericValue);
             value = numericValue.HasValue ? (SamAccountType)numericValue.Value : (SamAccountType?)null;
         }
-        protected void ReadAttribute(int attributeId, out bool value)
+        public void ReadAttribute(int attributeId, out bool value)
         {
             int? numericValue;
             this.ReadAttribute(attributeId, out numericValue);
