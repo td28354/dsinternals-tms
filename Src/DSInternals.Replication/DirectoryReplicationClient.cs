@@ -135,6 +135,45 @@ namespace DSInternals.Replication
             } while (result.HasMoreData);
         }
 
+        public IEnumerable<ReplicaObject> GetAllObjects(string domainNamingContext, ReplicationProgressHandler progressReporter = null)
+        {
+            Validator.AssertNotNullOrWhiteSpace(domainNamingContext, nameof(domainNamingContext));
+            ReplicationCookie cookie = new ReplicationCookie(domainNamingContext);
+            return GetAllObjects(cookie, progressReporter);
+        }
+
+        public IEnumerable<ReplicaObject> GetAllObjects(ReplicationCookie initialCookie, ReplicationProgressHandler progressReporter = null)
+        {
+            Validator.AssertNotNull(initialCookie, nameof(initialCookie));
+            // Create AD schema
+            var schema = BasicSchemaFactory.CreateSchema();
+            var currentCookie = initialCookie;
+            ReplicationResult result;
+            int processedObjectCount = 0;
+
+            do
+            {
+                // Perform one replication cycle
+                result = this.drsConnection.ReplicateAllObjects(currentCookie);
+
+                // Report replication progress
+                if (progressReporter != null)
+                {
+                    processedObjectCount += result.Objects.Count;
+                    progressReporter(result.Cookie, processedObjectCount, result.TotalObjectCount);
+                }
+
+                // Process the returned objects
+                foreach (var obj in result.Objects)
+                {
+                    yield return obj;
+                }
+
+                // Update the position of the replication cursor
+                currentCookie = result.Cookie;
+            } while (result.HasMoreData);
+        }
+
         public DSAccount GetAccount(Guid objectGuid, AccountPropertySets propertySets = AccountPropertySets.All)
         {
             var obj = this.drsConnection.ReplicateSingleObject(objectGuid);
