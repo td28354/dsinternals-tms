@@ -135,14 +135,14 @@ namespace DSInternals.Replication
             } while (result.HasMoreData);
         }
 
-        public IEnumerable<ReplicaObject> GetAllObjects(string domainNamingContext, ReplicationProgressHandler progressReporter = null)
+        public IEnumerable<ReplicaObject> GetAllObjects(string domainNamingContext, ReplicationProgressHandler progressReporter = null, AccountPropertySets properties = AccountPropertySets.All)
         {
             Validator.AssertNotNullOrWhiteSpace(domainNamingContext, nameof(domainNamingContext));
             ReplicationCookie cookie = new ReplicationCookie(domainNamingContext);
-            return GetAllObjects(cookie, progressReporter);
+            return GetAllObjects(cookie, progressReporter, properties);
         }
 
-        public IEnumerable<ReplicaObject> GetAllObjects(ReplicationCookie initialCookie, ReplicationProgressHandler progressReporter = null)
+        public IEnumerable<ReplicaObject> GetAllObjects(ReplicationCookie initialCookie, ReplicationProgressHandler progressReporter = null, AccountPropertySets properties = AccountPropertySets.All)
         {
             Validator.AssertNotNull(initialCookie, nameof(initialCookie));
             // Create AD schema

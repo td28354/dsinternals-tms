@@ -249,12 +249,6 @@
             private set;
         }
 
-        public DateTime? PwdLastSet
-        {
-            get;
-            private set;
-        }
-
 
         /// <summary>
         /// Loads credential roaming objects and timestamps.
@@ -427,12 +421,6 @@
             // Custom attributes
             dsObject.ReadAttribute(CommonDirectoryAttributes.ProxyAddresses, out string[] proxies);
             this.ProxyAddresses = proxies;
-
-            dsObject.ReadAttribute(CommonDirectoryAttributes.pwdLastSet2, out long? pwdLastChanges);
-            if (pwdLastChanges.HasValue)
-            {
-                this.PwdLastSet = DateTime.FromFileTime(pwdLastChanges.Value);
-            }
         }
 
         protected void LoadManager(DirectoryObject dsObject)
