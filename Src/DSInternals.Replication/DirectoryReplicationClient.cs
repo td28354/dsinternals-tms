@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Security.Principal;
 using System.Security.AccessControl;
+using System.Linq;
 
 namespace DSInternals.Replication
 {
@@ -116,12 +117,13 @@ namespace DSInternals.Replication
                     progressReporter(result.Cookie, processedObjectCount, result.TotalObjectCount);
                 }
 
+                // OLD CODE: Process the returned objects
                 // Process the returned objects
                 foreach (var obj in result.Objects)
                 {
                     obj.Schema = schema;
 
-                    var account = AccountFactory.CreateAccount(obj, this.NetBIOSDomainName, this.SecretDecryptor, properties);
+                    var account = AccountFactory.CreateAccount(obj, this.NetBIOSDomainName, this.SecretDecryptor, SamAccountType.User, properties);
 
                     if (account != null)
                     {
@@ -129,6 +131,25 @@ namespace DSInternals.Replication
                         yield return account;
                     }
                 }
+
+                // Process the returned objects in parallel
+                //var netBIOSDomainName = this.NetBIOSDomainName;
+                //var secretDecryptor = this.SecretDecryptor;
+
+                //var accounts = result.Objects
+                //    .AsParallel()
+                //    .Select(obj =>
+                //    {
+                //        obj.Schema = schema;
+                //        return AccountFactory.CreateAccount(obj, netBIOSDomainName, secretDecryptor, SamAccountType.User, properties);
+                //    })
+                //    .Where(account => account != null)
+                //    .ToList();
+
+                //foreach (var account in accounts)
+                //{
+                //    yield return account;
+                //}
 
                 // Update the position of the replication cursor
                 currentCookie = result.Cookie;
@@ -172,6 +193,16 @@ namespace DSInternals.Replication
                 // Update the position of the replication cursor
                 currentCookie = result.Cookie;
             } while (result.HasMoreData);
+        }
+
+        public DSAccount GetAccountFromReplicaObject(ReplicaObject obj, AccountPropertySets propertySets = AccountPropertySets.All)
+        {
+            Validator.AssertNotNull(obj, nameof(obj));
+            var schema = BasicSchemaFactory.CreateSchema();
+            obj.Schema = schema;
+            var account = AccountFactory.CreateAccount(obj, this.NetBIOSDomainName, this.SecretDecryptor, propertySets);
+            
+            return account;
         }
 
         public DSAccount GetAccount(Guid objectGuid, AccountPropertySets propertySets = AccountPropertySets.All)
