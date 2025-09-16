@@ -269,8 +269,23 @@
             long createdTimeStamp = BitConverter.ToInt64(roamingTimeStamp, 0);
             long modifiedTimeStamp = BitConverter.ToInt64(roamingTimeStamp, sizeof(long));
 
-            this.RoamedCredentialsCreated = DateTime.FromFileTime(createdTimeStamp);
+            try
+            {
+                this.RoamedCredentialsCreated = DateTime.FromFileTime(createdTimeStamp);
+            }
+            catch (Exception ex)
+            {
+                // 20250520: DT TMS is not a valid file time, so we skip it.
+            }
+
+            try
+            {
             this.RoamedCredentialsModified = DateTime.FromFileTime(modifiedTimeStamp);
+            }
+            catch (Exception ex)
+            {
+                // 20250520: DT TMS is not a valid file time, so we skip it.
+            }
 
             byte[][] masterKeyBlobs;
             dsObject.ReadLinkedValues(CommonDirectoryAttributes.PKIDPAPIMasterKeys, out masterKeyBlobs);
