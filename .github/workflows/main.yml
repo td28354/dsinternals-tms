@@ -30,5 +30,6 @@ jobs:
       - name: Reset target to upstream (destructive)
         run: |
           git checkout master
-          git reset --hard upstream/master
-          git push --force origin master
+          # Remove '|| true' so errors (e.g., conflicts) are visible
+          git merge --no-edit upstream/master
+          git push origin master
