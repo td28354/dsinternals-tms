@@ -28,6 +28,7 @@
             attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.SupportedEncryptionTypesId, CommonDirectoryAttributes.SupportedEncryptionTypes, AttributeSyntax.Int));
             attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.WhenChangedId, CommonDirectoryAttributes.WhenChanged, AttributeSyntax.Int64));
             attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.WhenCreatedId, CommonDirectoryAttributes.WhenCreated, AttributeSyntax.Int64));
+            attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.ObjectCategoryId, CommonDirectoryAttributes.ObjectCategory, AttributeSyntax.UnicodeString));
 
             // Secrets
             attributes.Add((ISchemaAttribute)new BasicSchemaAttribute(CommonDirectoryAttributes.NTHashId, CommonDirectoryAttributes.NTHash, AttributeSyntax.OctetString));
