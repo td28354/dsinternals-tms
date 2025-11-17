@@ -6,30 +6,34 @@ on:
   workflow_dispatch: # Allows manual triggering
 
 permissions:
-  contents: write
-  workflows: write
+  contents: read   # GITHUB_TOKEN must NOT write, we use PAT instead
 
 jobs:
   mirror:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Your Repository (td28354/dsinternals-tms)
+      - name: Checkout target repository (td28354/dsinternals-tms)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.REPO_SYNC_PAT }}
 
-      - name: Configure git user
+      - name: Configure git identity
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
 
-      - name: Add DSInternals as Upstream and Fetch Changes
+      - name: Add DSInternals as upstream and fetch
         run: |
           git remote add upstream https://github.com/MichaelGrafnetter/DSInternals.git || true
           git fetch upstream master
 
-      - name: Reset target to upstream (destructive)
+      - name: Reset local master to upstream master
         run: |
           git checkout master
           git reset --hard upstream/master
-          git push --force origin master
+
+      - name: Force-push mirror to target repository using PAT
+        run: |
+          git push --force https://${{ secrets.REPO_SYNC_PAT }}@github.com/td28354/dsinternals-tms.git master
