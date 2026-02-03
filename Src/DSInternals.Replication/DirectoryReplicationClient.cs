@@ -132,28 +132,32 @@ namespace DSInternals.Replication
                     }
                 }
 
-                // Process the returned objects in parallel
-                //var netBIOSDomainName = this.NetBIOSDomainName;
-                //var secretDecryptor = this.SecretDecryptor;
-
-                //var accounts = result.Objects
-                //    .AsParallel()
-                //    .Select(obj =>
-                //    {
-                //        obj.Schema = schema;
-                //        return AccountFactory.CreateAccount(obj, netBIOSDomainName, secretDecryptor, SamAccountType.User, properties);
-                //    })
-                //    .Where(account => account != null)
-                //    .ToList();
-
-                //foreach (var account in accounts)
-                //{
-                //    yield return account;
-                //}
-
                 // Update the position of the replication cursor
                 currentCookie = result.Cookie;
             } while (result.HasMoreData);
+        }
+
+        public (bool, Exception) ValidateConnectionSettings(string domainNamingContext)
+        {
+            Validator.AssertNotNullOrWhiteSpace(domainNamingContext, nameof(domainNamingContext));
+            ReplicationCookie cookie = new ReplicationCookie(domainNamingContext);
+            
+            Validator.AssertNotNull(cookie, nameof(cookie));
+            // Create AD schema
+            var schema = BasicSchemaFactory.CreateSchema();
+            var currentCookie = cookie;
+            ReplicationResult result;
+
+            try
+            {
+                // Perform one replication cycle
+                result = this.drsConnection.ReplicateAllObjects(currentCookie);
+                return (true, null);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex);
+            }
         }
 
         public IEnumerable<ReplicaObject> GetAllObjects(string domainNamingContext, ReplicationProgressHandler progressReporter = null, AccountPropertySets properties = AccountPropertySets.All)
