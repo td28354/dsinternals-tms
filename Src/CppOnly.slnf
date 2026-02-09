@@ -1,0 +1,8 @@
+{
+  "solution": {
+    "path": "DSInternals.sln",
+    "projects": [
+      "DSInternals.Replication.Interop\\DSInternals.Replication.Interop.vcxproj"
+    ]
+  }
+}

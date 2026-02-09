@@ -1,0 +1,17 @@
+{
+  "solution": {
+    "path": "DSInternals.sln",
+    "projects": [
+      "DSInternals.Common\\DSInternals.Common.csproj",
+      "DSInternals.Common.Test\\DSInternals.Common.Test.csproj",
+      "DSInternals.DataStore\\DSInternals.DataStore.csproj",
+      "DSInternals.DataStore.Test\\DSInternals.DataStore.Test.csproj",
+      "DSInternals.SAM\\DSInternals.SAM.csproj",
+      "DSInternals.SAM.Test\\DSInternals.SAM.Test.csproj",
+      "DSInternals.Replication.Model\\DSInternals.Replication.Model.csproj",
+      "DSInternals.Replication.Model.Test\\DSInternals.Replication.Model.Test.csproj",
+      "Microsoft.Database.Isam\\Microsoft.Database.Isam.csproj",
+      "Microsoft.Isam.Esent.Interop\\Microsoft.Isam.Esent.Interop.csproj"
+    ]
+  }
+}
