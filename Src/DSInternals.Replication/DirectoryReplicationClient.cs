@@ -158,6 +158,13 @@ namespace DSInternals.Replication
             return GetAllObjects(cookie, progressReporter, properties);
         }
 
+        public IEnumerable<ReplicaObject> GetAllObjects(string domainNamingContext, uint[] partialAttributeSet)
+        {
+            Validator.AssertNotNullOrWhiteSpace(domainNamingContext, nameof(domainNamingContext));
+            ReplicationCookie cookie = new ReplicationCookie(domainNamingContext);
+            return GetAllObjects(cookie, partialAttributeSet);
+        }
+
         public IEnumerable<ReplicaObject> GetAllObjects(ReplicationCookie initialCookie, ReplicationProgressHandler progressReporter = null, AccountPropertySets properties = AccountPropertySets.All)
         {
             Validator.AssertNotNull(initialCookie, nameof(initialCookie));
@@ -186,6 +193,25 @@ namespace DSInternals.Replication
                 }
 
                 // Update the position of the replication cursor
+                currentCookie = result.Cookie;
+            } while (result.HasMoreData);
+        }
+
+        public IEnumerable<ReplicaObject> GetAllObjects(ReplicationCookie initialCookie, uint[] partialAttributeSet)
+        {
+            Validator.AssertNotNull(initialCookie, nameof(initialCookie));
+            var currentCookie = initialCookie;
+            ReplicationResult result;
+
+            do
+            {
+                result = this.drsConnection.ReplicateAllObjects(currentCookie, partialAttributeSet, 8 * 1024 * 1024, 1000);
+
+                foreach (var obj in result.Objects)
+                {
+                    yield return obj;
+                }
+
                 currentCookie = result.Cookie;
             } while (result.HasMoreData);
         }
