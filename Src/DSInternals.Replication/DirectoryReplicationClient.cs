@@ -137,21 +137,12 @@ namespace DSInternals.Replication
             } while (result.HasMoreData);
         }
 
-        public (bool, Exception) ValidateConnectionSettings(string domainNamingContext)
+        public (bool IsValid, Exception Error) ValidateConnectionSettings(string domainNamingContext)
         {
             Validator.AssertNotNullOrWhiteSpace(domainNamingContext, nameof(domainNamingContext));
-            ReplicationCookie cookie = new ReplicationCookie(domainNamingContext);
-            
-            Validator.AssertNotNull(cookie, nameof(cookie));
-            // Create AD schema
-            var schema = BasicSchemaFactory.CreateSchema();
-            var currentCookie = cookie;
-            ReplicationResult result;
-
             try
             {
-                // Perform one replication cycle
-                result = this.drsConnection.ReplicateAllObjects(currentCookie);
+                this.drsConnection.GetReplicationCursors(domainNamingContext);
                 return (true, null);
             }
             catch (Exception ex)
