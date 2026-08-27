@@ -142,8 +142,9 @@ namespace DSInternals.Replication
             Validator.AssertNotNullOrWhiteSpace(domainNamingContext, nameof(domainNamingContext));
             try
             {
-                this.drsConnection.GetReplicationCursors(domainNamingContext);
-                return (true, null);
+                var cookie = new ReplicationCookie(domainNamingContext);
+                var result = this.drsConnection.ReplicateAllObjects(cookie);
+                return (result.Objects.Count > 0, null);
             }
             catch (Exception ex)
             {
